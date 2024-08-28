@@ -30,6 +30,21 @@ module TSOS {
                                   "ver",
                                   "- Displays the current version data.");
             this.commandList[this.commandList.length] = sc;
+            // date
+            sc = new ShellCommand(this.shellDate,
+                                "date",
+                                "- Displays the current date.");
+            this.commandList[this.commandList.length] = sc;
+            // whereami
+            sc = new ShellCommand(this.shellWhereAmI,
+                "whereami",
+                "- Displays the current location.");
+            this.commandList[this.commandList.length] = sc;
+            // days2live
+            sc = new ShellCommand(this.shellDays2Live,
+                "days2live",
+                "- Tells user how long they have until they die.");
+            this.commandList[this.commandList.length] = sc;
 
             // help
             sc = new ShellCommand(this.shellHelp,
@@ -207,6 +222,19 @@ module TSOS {
             _StdOut.putText(APP_NAME + " version " + APP_VERSION);
         }
 
+        public shellDate(args: string[]){
+            _StdOut.putText("Todays Date: " + Date())
+        }
+
+        public shellWhereAmI(args: string[]){
+            _StdOut.putText("Look behind you ;)")
+        }
+
+        public shellDays2Live(args: string[]) {
+            let daysLeft = Math.floor(Math.random() * 100) + 1;
+            _StdOut.putText(`You have: ${daysLeft} days left.`);
+        }
+        
         public shellHelp(args: string[]) {
             _StdOut.putText("Commands:");
             for (var i in _OsShell.commandList) {

@@ -24,6 +24,15 @@ var TSOS;
             // ver
             sc = new TSOS.ShellCommand(this.shellVer, "ver", "- Displays the current version data.");
             this.commandList[this.commandList.length] = sc;
+            // date
+            sc = new TSOS.ShellCommand(this.shellDate, "date", "- Displays the current date.");
+            this.commandList[this.commandList.length] = sc;
+            // whereami
+            sc = new TSOS.ShellCommand(this.shellWhereAmI, "whereami", "- Displays the current location.");
+            this.commandList[this.commandList.length] = sc;
+            // days2live
+            sc = new TSOS.ShellCommand(this.shellDays2Live, "days2live", "- Tells user how long they have until they die.");
+            this.commandList[this.commandList.length] = sc;
             // help
             sc = new TSOS.ShellCommand(this.shellHelp, "help", "- This is the help command. Seek help.");
             this.commandList[this.commandList.length] = sc;
@@ -168,6 +177,16 @@ var TSOS;
         // actual parameter list when this function is called, so I feel like we need it.
         shellVer(args) {
             _StdOut.putText(APP_NAME + " version " + APP_VERSION);
+        }
+        shellDate(args) {
+            _StdOut.putText("Todays Date: " + Date());
+        }
+        shellWhereAmI(args) {
+            _StdOut.putText("Look behind you ;)");
+        }
+        shellDays2Live(args) {
+            let daysLeft = Math.floor(Math.random() * 100) + 1;
+            _StdOut.putText(`You have: ${daysLeft} days left.`);
         }
         shellHelp(args) {
             _StdOut.putText("Commands:");
