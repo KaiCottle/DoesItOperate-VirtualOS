@@ -33,6 +33,9 @@ var TSOS;
             // days2live
             sc = new TSOS.ShellCommand(this.shellDays2Live, "days2live", "- Tells user how long they have until they die.");
             this.commandList[this.commandList.length] = sc;
+            //status
+            sc = new TSOS.ShellCommand(this.shellStatus, "status", "<string> - Sets the status.");
+            this.commandList[this.commandList.length] = sc;
             // help
             sc = new TSOS.ShellCommand(this.shellHelp, "help", "- This is the help command. Seek help.");
             this.commandList[this.commandList.length] = sc;
@@ -187,6 +190,22 @@ var TSOS;
         shellDays2Live(args) {
             let daysLeft = Math.floor(Math.random() * 100) + 1;
             _StdOut.putText(`You have: ${daysLeft} days left.`);
+        }
+        shellStatus(args) {
+            if (args.length > 0) {
+                const status = args.join(' '); // Join arguments into a single string
+                const statusElement = document.getElementById("status"); // Get the status label element
+                if (statusElement) {
+                    statusElement.innerHTML = "Status: " + status; // Update the HTML content of the label
+                    _StdOut.putText("Status set to: " + status);
+                }
+                else {
+                    _StdOut.putText("Error: Status element not found.");
+                }
+            }
+            else {
+                _StdOut.putText("Usage: status <string>  Please supply a string.");
+            }
         }
         shellHelp(args) {
             _StdOut.putText("Commands:");
