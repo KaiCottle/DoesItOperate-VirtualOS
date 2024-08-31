@@ -70,15 +70,22 @@ var TSOS;
         }
         advanceLine() {
             this.currentXPosition = 0;
-            /*
-             * Font size measures from the baseline to the highest point in the font.
-             * Font descent measures from the baseline to the lowest point in the font.
-             * Font height margin is extra spacing between the lines.
-             */
             this.currentYPosition += _DefaultFontSize +
                 _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) +
                 _FontHeightMargin;
-            // TODO: Handle scrolling. (iProject 1)
+            // Handle scrolling when text reaches the bottom of the canvas
+            if (this.currentYPosition > _Canvas.height) {
+                this.scrollUp();
+            }
+        }
+        scrollUp() {
+            var lineHeight = _DefaultFontSize + _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) + _FontHeightMargin;
+            // Copy the canvas content upwards by one line's height
+            var imageData = _DrawingContext.getImageData(0, lineHeight, _Canvas.width, _Canvas.height - lineHeight);
+            this.clearScreen();
+            _DrawingContext.putImageData(imageData, 0, 0);
+            // Reset Y position to the bottom of the canvas
+            this.currentYPosition -= lineHeight;
         }
     }
     TSOS.Console = Console;

@@ -241,11 +241,11 @@ module TSOS {
         
         public shellStatus(args: string[]) {
             if (args.length > 0) {
-                const status = args.join(' '); // Join arguments into a single string
-                const statusElement = document.getElementById("status"); // Get the status label element
+                const status = args.join(' ');
+                const statusElement = document.getElementById("status"); 
         
                 if (statusElement) {
-                    statusElement.innerHTML = "Status: " + status; // Update the HTML content of the label
+                    statusElement.innerHTML = "Status: " + status; // Updates the HTML
                     _StdOut.putText("Status set to: " + status);
                 } else {
                     _StdOut.putText("Error: Status element not found.");
