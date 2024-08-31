@@ -100,6 +100,44 @@
    </div>
 </div>
 
+<div class="task-bar">
+   <div id="info-dash">
+      <label id="date-time"></label>
+      <br>
+      <label id="status">Status: I guess it works</label>
+   </div>  
+</div>
+
+<style>
+   .task-bar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start; 
+      padding: 10px;
+   }
+
+   #info-dash {
+      display: flex;
+      flex-direction: column;
+   }
+
+   #date-time, #status {
+      margin: 5px 0;
+   }
+</style>
+
+<script>
+   function updateDateTime() {
+      const date = new Date();
+      const formattedString = date.toLocaleString();
+      document.getElementById("date-time").textContent = formattedString;
+   }
+
+   setInterval(updateDateTime, 1000);
+   updateDateTime();
+</script>
+
+
 <p class="footerText" style="clear:both;">
    <br>
    Copyright &copy; 2008 - 2112 No Rights Reserved.
