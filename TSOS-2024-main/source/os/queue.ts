@@ -33,6 +33,14 @@ module TSOS {
             return retVal;
         }
 
+        public removeLast() {
+            var retVal = null;
+            if (this.q.length > 0) {
+                retVal = this.q.pop(); // Removes the last item
+            }
+            return retVal;
+        }
+
         public toString() {
             var retVal = "";
             for (var i in this.q) {

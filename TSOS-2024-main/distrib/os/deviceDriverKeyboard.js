@@ -45,6 +45,25 @@ var TSOS;
                 chr = String.fromCharCode(keyCode);
                 _KernelInputQueue.enqueue(chr);
             }
+            else if ((keyCode == 8)) { // backspace
+                if (_Console.buffer.length != 0) {
+                    // Get the length of the last character in the buffer
+                    let char = _Console.buffer.charAt(_Console.buffer.length - 1);
+                    let offset = TSOS.CanvasTextFunctions.measure(_Console.currentFont, _Console.currentFontSize, char);
+                    // Delete last character from buffer.
+                    _Console.buffer = _Console.buffer.substring(0, _Console.buffer.length - 1);
+                    // Shift X-position and delete last character from text field
+                    _Console.currentXPosition = _Console.currentXPosition - offset;
+                    _DrawingContext.clearRect(_Console.currentXPosition, _Console.currentYPosition - _DefaultFontSize, offset, _DefaultFontSize + 2 * _FontHeightMargin);
+                    if (_Console.currentXPosition <= 0) {
+                        _DrawingContext.clearRect(0, _Console.currentYPosition - _DefaultFontSize, _Canvas.width, _DefaultFontSize + 2 * _FontHeightMargin + _Console.currentYPosition);
+                        _Console.currentYPosition = _Console.currentYPosition;
+                        _Console.currentXPosition = 0;
+                        _OsShell.putPrompt();
+                        _Console.putText(_Console.buffer);
+                    }
+                } // remove the last character from the input queue
+            }
         }
     }
     TSOS.DeviceDriverKeyboard = DeviceDriverKeyboard;
