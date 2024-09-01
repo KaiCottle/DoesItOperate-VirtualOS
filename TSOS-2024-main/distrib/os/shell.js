@@ -231,7 +231,43 @@ var TSOS;
                     case "help":
                         _StdOut.putText("Help displays a list of (hopefully) valid commands.");
                         break;
-                    // TODO: Make descriptive MANual page entries for the the rest of the shell commands here.
+                    // TODO: Make descriptive MANual page entries for the rest of the shell commands here.
+                    case "ver":
+                        _StdOut.putText("Displays the current version data.");
+                        break;
+                    case "date":
+                        _StdOut.putText("Displays the current date.");
+                        break;
+                    case "whereami":
+                        _StdOut.putText("Displays your current location.");
+                        break;
+                    case "days2live":
+                        _StdOut.putText("Tells the user how long they have until they die.");
+                        break;
+                    case "status":
+                        _StdOut.putText("Sets the status. Usage: status <string>");
+                        break;
+                    case "help":
+                        _StdOut.putText("Displays a list of available commands.");
+                        break;
+                    case "shutdown":
+                        _StdOut.putText("Shuts down the virtual OS but leaves the underlying host / hardware simulation running.");
+                        break;
+                    case "cls":
+                        _StdOut.putText("Clears the screen and resets the cursor position.");
+                        break;
+                    case "man":
+                        _StdOut.putText("Displays the manual page for a specific command. Usage: man <command>");
+                        break;
+                    case "trace":
+                        _StdOut.putText("Turns the OS trace on or off. Usage: trace <on | off>");
+                        break;
+                    case "rot13":
+                        _StdOut.putText("Does rot13 obfuscation on a string. Usage: rot13 <string>");
+                        break;
+                    case "prompt":
+                        _StdOut.putText("Sets the prompt. Usage: prompt <string>");
+                        break;
                     default:
                         _StdOut.putText("No manual entry for " + args[0] + ".");
                 }
