@@ -66,6 +66,8 @@ module TSOS {
                         _Console.putText(_Console.buffer);
                     }
                 }
+            } else if ((keyCode == 9)) { //tab
+
             }
         }
     }

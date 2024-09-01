@@ -30,6 +30,13 @@ var TSOS;
             }
             return retVal;
         }
+        removeLast() {
+            var retVal = null;
+            if (this.q.length > 0) {
+                retVal = this.q.pop(); // Removes the last item
+            }
+            return retVal;
+        }
         toString() {
             var retVal = "";
             for (var i in this.q) {

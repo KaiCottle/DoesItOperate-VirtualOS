@@ -45,12 +45,13 @@ var TSOS;
                 chr = String.fromCharCode(keyCode);
                 _KernelInputQueue.enqueue(chr);
             }
-            else if ((keyCode == 8)) { // backspace
+            else if ((keyCode == 8)) { // backspace 
+                //This was largely thanks to BrenDOS I used his code as a reference.
                 if (_Console.buffer.length != 0) {
-                    // Get the length of the last character in the buffer
+                    // length of last character
                     let char = _Console.buffer.charAt(_Console.buffer.length - 1);
                     let offset = TSOS.CanvasTextFunctions.measure(_Console.currentFont, _Console.currentFontSize, char);
-                    // Delete last character from buffer.
+                    // Delete last character
                     _Console.buffer = _Console.buffer.substring(0, _Console.buffer.length - 1);
                     // Shift X-position and delete last character from text field
                     _Console.currentXPosition = _Console.currentXPosition - offset;
@@ -62,7 +63,9 @@ var TSOS;
                         _OsShell.putPrompt();
                         _Console.putText(_Console.buffer);
                     }
-                } // remove the last character from the input queue
+                }
+            }
+            else if ((keyCode == 9)) { //tab
             }
         }
     }
