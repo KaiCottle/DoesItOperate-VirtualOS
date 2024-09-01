@@ -73,7 +73,7 @@ var TSOS;
             this.currentYPosition += _DefaultFontSize +
                 _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) +
                 _FontHeightMargin;
-            // Handle scrolling when text reaches the bottom of the canvas
+                // Handle scrolling when text reaches the bottom of the canvas
             if (this.currentYPosition > _Canvas.height) {
                 this.scrollUp();
             }
