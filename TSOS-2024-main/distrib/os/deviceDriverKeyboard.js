@@ -65,7 +65,36 @@ var TSOS;
                     }
                 }
             }
-            else if ((keyCode == 9)) { //tab
+            else if (keyCode == 9) { // tab
+                // Tab completion
+                const cmdString = _Console.buffer; // Get current command entry
+                if (cmdString.length === 0)
+                    return;
+                const matchingCmds = _OsShell.commandList.filter(commandName => commandName.command.startsWith(cmdString));
+                if (matchingCmds.length === 1) {
+                    // Auto-complete the single matching command
+                    const remainingCmd = matchingCmds[0].command.slice(cmdString.length);
+                    for (const char of remainingCmd) {
+                        _KernelInputQueue.enqueue(char);
+                    }
+                }
+                else if (matchingCmds.length > 0) {
+                    // Clear current line
+                    _DrawingContext.clearRect(0, _Console.currentYPosition - _DefaultFontSize, _Canvas.width, _DefaultFontSize + 2 * _FontHeightMargin);
+                    _DrawingContext.clearRect(0, _Console.currentYPosition + _FontHeightMargin, _Canvas.width, _DefaultFontSize + 2 * _FontHeightMargin + _Console.currentYPosition);
+                    _Console.currentXPosition = 0;
+                    // Output matching commands, 3 per line
+                    matchingCmds.forEach((cmd, index) => {
+                        _Console.putText(cmd.command + "   ");
+                        if ((index + 1) % 3 === 0)
+                            _Console.advanceLine();
+                    });
+                    if (matchingCmds.length % 3 !== 0)
+                        _Console.advanceLine();
+                    // Reprint prompt and entered text
+                    _OsShell.putPrompt();
+                    _Console.putText(_Console.buffer);
+                }
             }
         }
     }
