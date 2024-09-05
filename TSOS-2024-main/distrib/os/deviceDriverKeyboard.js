@@ -66,7 +66,8 @@ var TSOS;
                 }
             }
             else if (keyCode == 9) { // tab
-                // Tab completion
+                // Tab completion -> Refereneced from BrenDOS but made some stylistic changes
+                // "Every good line of code has already been written, you just have to find it"
                 const cmdString = _Console.buffer; // Get current command entry
                 if (cmdString.length === 0)
                     return;
@@ -95,6 +96,29 @@ var TSOS;
                     _OsShell.putPrompt();
                     _Console.putText(_Console.buffer);
                 }
+            }
+            else if (keyCode === 38) { // up arrow
+                // Get the most recent command from the command history
+                if (_CommandLog.length === 0)
+                    return;
+                if (_CommandLogPosition === null) {
+                    _CommandLogPosition = _CommandLog.length;
+                }
+                if (_CommandLogPosition > 0) {
+                    _CommandLogPosition--;
+                    setConsoleBuffer(_CommandLog[_CommandLogPosition]);
+                    clearConsoleToRightOfPrompt();
+                    _Console.putText(_Console.buffer);
+                }
+            }
+            function setConsoleBuffer(command) {
+                _Console.buffer = command || ""; // Set to empty if command is undefined or null
+            }
+            function clearConsoleToRightOfPrompt() {
+                const yStart = _Console.currentYPosition;
+                const yPosition = _Console.currentYPosition;
+                _DrawingContext.clearRect(_DefaultFontSize, yStart - _DefaultFontSize, _Canvas.width, _DefaultFontSize + 2 * _FontHeightMargin);
+                _DrawingContext.clearRect(0, yStart + _FontHeightMargin, _Canvas.width, _DefaultFontSize + 2 * _FontHeightMargin + yPosition);
             }
         }
     }
