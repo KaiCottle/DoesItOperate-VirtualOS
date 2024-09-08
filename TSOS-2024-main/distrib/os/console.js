@@ -101,7 +101,7 @@ var TSOS;
                         _StdOut.putText(this.commandHistory[this.commandIndex]);
                     }
                     else {
-                        _StdOut.putText("You have to go up first, this is embarrassing");
+                        _StdOut.putText("You have to go up first, this is embarrassing.");
                     }
                 }
                 else {
@@ -176,7 +176,6 @@ var TSOS;
             _DrawingContext.font = '120px serif';
             _DrawingContext.fillStyle = "#FF4136";
             _DrawingContext.fillText("💀", _Canvas.width / 2 - 60, 180);
-            // Display the error message
             _DrawingContext.font = '40px serif';
             _DrawingContext.fillStyle = "white";
             _DrawingContext.font = '25px serif';

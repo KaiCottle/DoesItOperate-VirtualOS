@@ -33,13 +33,17 @@ var TSOS;
             // days2live
             sc = new TSOS.ShellCommand(this.shellDays2Live, "days2live", "- Tells user how long they have until they die.");
             this.commandList[this.commandList.length] = sc;
-            //status
+            // status
             sc = new TSOS.ShellCommand(this.shellStatus, "status", "<string> - Sets the status.");
             this.commandList[this.commandList.length] = sc;
             // help
             sc = new TSOS.ShellCommand(this.shellHelp, "help", "- This is the help command. Seek help.");
             this.commandList[this.commandList.length] = sc;
+            // bsod
             sc = new TSOS.ShellCommand(this.shellBsod, "bsod", "Displays the Blue Screen of Death.");
+            this.commandList[this.commandList.length] = sc;
+            // load
+            sc = new TSOS.ShellCommand(this.shellLoad, "load", "<load>- Validates previous input, only hex digits and spaces are valid.");
             this.commandList[this.commandList.length] = sc;
             // shutdown
             sc = new TSOS.ShellCommand(this.shellShutdown, "shutdown", "- Shuts down the virtual OS but leaves the underlying host / hardware simulation running.");
@@ -196,6 +200,18 @@ var TSOS;
         shellBsod(args) {
             _Console.BSOD();
         }
+        shellLoad(args) {
+            const programInput = document.getElementById("taProgramInput");
+            const program = programInput.value.trim();
+            // Validate the program
+            const isValid = /^[0-9A-Fa-f\s]+$/.test(program);
+            if (isValid) {
+                _StdOut.putText("Program loaded successfully.");
+            }
+            else {
+                _StdOut.putText("Invalid program. Only hex digits and spaces are valid.");
+            }
+        }
         shellStatus(args) {
             if (args.length > 0) {
                 const status = args.join(' ');
@@ -254,6 +270,9 @@ var TSOS;
                         break;
                     case "bsod":
                         _StdOut.putText("Displays the Blue Screen of Death.");
+                        break;
+                    case "load":
+                        _StdOut.putText("<load> - Validates previous input, only hex digits and spaces allowed.");
                         break;
                     case "help":
                         _StdOut.putText("Displays a list of available commands.");
