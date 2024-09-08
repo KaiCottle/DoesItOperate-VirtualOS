@@ -102,7 +102,7 @@ module TSOS {
                         _StdOut.putText(this.commandHistory[this.commandIndex]);       
                     }
                     else{
-                        _StdOut.putText("You have to go up first, this is embarrassing");
+                        _StdOut.putText("You have to go up first, this is embarrassing.");
                     }
                 }
                 else {
@@ -138,6 +138,7 @@ module TSOS {
             this.currentYPosition += _DefaultFontSize + 
                                      _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) +
                                      _FontHeightMargin;
+                                     
             // Scroll
             if (this.currentYPosition > _Canvas.height){
                 // Get CLI size and take screenshot
