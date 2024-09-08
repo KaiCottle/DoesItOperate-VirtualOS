@@ -123,11 +123,18 @@ var TSOS;
                 decided to write one function and use the term "text" to connote string or char.
             */
             if (text !== "") {
-                // Draw the text at the current X and Y coordinates.
-                _DrawingContext.drawText(this.currentFont, this.currentFontSize, this.currentXPosition, this.currentYPosition, text);
-                // Move the current X position.
-                var offset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, text);
-                this.currentXPosition = this.currentXPosition + offset;
+                // Approach for line wrap: break the input text int characters and determine if each char will
+                // surpass the width of the canvas, if so then advanceLine and print, if not continue printing on line
+                for (var i = 0; i < text.length; i++) {
+                    var Linetxt = text.charAt(i);
+                    var Xoffset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, Linetxt);
+                    // check to see if character will surpass the width of the canvas
+                    if (this.currentXPosition + Xoffset > _Canvas.width) {
+                        this.advanceLine();
+                    }
+                    _DrawingContext.drawText(this.currentFont, this.currentFontSize, this.currentXPosition, this.currentYPosition, Linetxt);
+                    this.currentXPosition = this.currentXPosition + Xoffset;
+                }
             }
         }
         advanceLine() {

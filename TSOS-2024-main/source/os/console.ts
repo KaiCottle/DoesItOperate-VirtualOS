@@ -117,28 +117,26 @@ module TSOS {
         }
 
         public putText(text): void {
-            /*  My first inclination here was to write two functions: putChar() and putString().
-                Then I remembered that JavaScript is (sadly) untyped and it won't differentiate
-                between the two. (Although TypeScript would. But we're compiling to JavaScipt anyway.)
-                So rather than be like PHP and write two (or more) functions that
-                do the same thing, thereby encouraging confusion and decreasing readability, I
-                decided to write one function and use the term "text" to connote string or char.
-            */
+            // takes a string of text, draws each character one by one, advance to a new line if needed.
             if (text !== "") {
-                // Draw the text at the current X and Y coordinates.
-                _DrawingContext.drawText(this.currentFont, this.currentFontSize, this.currentXPosition, this.currentYPosition, text);
-                // Move the current X position.
-                var offset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, text);
-                this.currentXPosition = this.currentXPosition + offset;
+                for (var i = 0; i < text.length; i++) {
+                    var text = text.charAt(i);
+                    var Xoffset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, text);
+                    if (this.currentXPosition + Xoffset > _Canvas.width) { 
+                            this.advanceLine();
+                    }
+                    _DrawingContext.drawText(this.currentFont, this.currentFontSize, this.currentXPosition, this.currentYPosition, text);
+                    this.currentXPosition = this.currentXPosition + Xoffset;
+                }
             }
-         }
+        }
 
          public advanceLine(): void {
             this.currentXPosition = 0;
             this.currentYPosition += _DefaultFontSize + 
                                      _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) +
                                      _FontHeightMargin;
-                                     
+
             // Scroll
             if (this.currentYPosition > _Canvas.height){
                 // Get CLI size and take screenshot
