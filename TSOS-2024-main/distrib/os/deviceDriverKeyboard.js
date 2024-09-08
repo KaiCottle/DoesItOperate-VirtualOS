@@ -20,105 +20,195 @@ var TSOS;
         krnKbdDriverEntry() {
             // Initialization routine for this, the kernel-mode Keyboard Device Driver.
             this.status = "loaded";
-            // More?
         }
+        //Changing the logic with how this is processed. Don't like the unnecessary work done with the previous. Must complete later today.
         krnKbdDispatchKeyPress(params) {
-            // Parse the params.  TODO: Check that the params are valid and osTrapError if not.
+            // Parse the params.
             var keyCode = params[0];
             var isShifted = params[1];
+            var isCtrled = params[2]; //Seems like a good thing to have
             _Kernel.krnTrace("Key code:" + keyCode + " shifted:" + isShifted);
             var chr = "";
             // Check to see if we even want to deal with the key that was pressed.
-            if ((keyCode >= 65) && (keyCode <= 90)) { // letter
+            if (((keyCode >= 65) && (keyCode <= 90))) { // letter
                 if (isShifted === true) {
                     chr = String.fromCharCode(keyCode); // Uppercase A-Z
                 }
                 else {
                     chr = String.fromCharCode(keyCode + 32); // Lowercase a-z
                 }
-                // TODO: Check for caps-lock and handle as shifted if so.
                 _KernelInputQueue.enqueue(chr);
             }
+            // number key special Characters & backspace / tab call
             else if (((keyCode >= 48) && (keyCode <= 57)) || // digits
-                (keyCode == 32) || // space
                 (keyCode == 13)) { // enter
                 chr = String.fromCharCode(keyCode);
+                if (isShifted) {
+                    switch (keyCode) {
+                        case 48:
+                            chr = ")";
+                            break;
+                        case 49:
+                            chr = "!";
+                            break;
+                        case 50:
+                            chr = "@";
+                            break;
+                        case 51:
+                            chr = "#";
+                            break;
+                        case 52:
+                            chr = "$";
+                            break;
+                        case 53:
+                            chr = "%";
+                            break;
+                        case 54:
+                            chr = "^";
+                            break;
+                        case 55:
+                            chr = "&";
+                            break;
+                        case 56:
+                            chr = "*";
+                            break;
+                        case 57:
+                            chr = "(";
+                            break;
+                    }
+                }
                 _KernelInputQueue.enqueue(chr);
             }
-            else if ((keyCode == 8)) { // backspace 
-                //This was largely thanks to BrenDOS I used his code as a reference.
-                if (_Console.buffer.length != 0) {
-                    // length of last character
-                    let char = _Console.buffer.charAt(_Console.buffer.length - 1);
-                    let offset = TSOS.CanvasTextFunctions.measure(_Console.currentFont, _Console.currentFontSize, char);
-                    // Delete last character
-                    _Console.buffer = _Console.buffer.substring(0, _Console.buffer.length - 1);
-                    // Shift X-position and delete last character from text field
-                    _Console.currentXPosition = _Console.currentXPosition - offset;
-                    _DrawingContext.clearRect(_Console.currentXPosition, _Console.currentYPosition - _DefaultFontSize, offset, _DefaultFontSize + 2 * _FontHeightMargin);
-                    if (_Console.currentXPosition <= 0) {
-                        _DrawingContext.clearRect(0, _Console.currentYPosition - _DefaultFontSize, _Canvas.width, _DefaultFontSize + 2 * _FontHeightMargin + _Console.currentYPosition);
-                        _Console.currentYPosition = _Console.currentYPosition;
-                        _Console.currentXPosition = 0;
-                        _OsShell.putPrompt();
-                        _Console.putText(_Console.buffer);
+            else if ((keyCode == 8) || // backspace
+                (keyCode == 9) || // tab
+                (keyCode == 32) || // space
+                (keyCode == 38) || // up arrow
+                (keyCode == 40)) { // down arrow
+                switch (keyCode) {
+                    case 8: { // backspace
+                        _KernelInputQueue.enqueue(String.fromCharCode(8));
+                        break;
+                    }
+                    case 9: { // Tab
+                        _KernelInputQueue.enqueue(String.fromCharCode(9));
+                        break;
+                    }
+                    case 32: { // space
+                        _KernelInputQueue.enqueue(" ");
+                        break;
+                    }
+                    case 38: { // up arrow
+                        _KernelInputQueue.enqueue(String.fromCharCode(38));
+                        break;
+                    }
+                    case 40: { // down arrow
+                        _KernelInputQueue.enqueue(String.fromCharCode(40));
+                        break;
                     }
                 }
             }
-            else if (keyCode == 9) { // tab
-                // Tab completion -> Refereneced from BrenDOS but made some stylistic changes
-                // "Every good line of code has already been written, you just have to find it"
-                const cmdString = _Console.buffer; // Get current command entry
-                if (cmdString.length === 0)
-                    return;
-                const matchingCmds = _OsShell.commandList.filter(commandName => commandName.command.startsWith(cmdString));
-                if (matchingCmds.length === 1) {
-                    // Auto-complete the single matching command
-                    const remainingCmd = matchingCmds[0].command.slice(cmdString.length);
-                    for (const char of remainingCmd) {
-                        _KernelInputQueue.enqueue(char);
+            else {
+                switch (keyCode) {
+                    case 186: {
+                        if (isShifted) {
+                            _KernelInputQueue.enqueue(":");
+                        }
+                        else {
+                            _KernelInputQueue.enqueue(";");
+                        }
+                        break;
+                    }
+                    case 187: {
+                        if (isShifted) {
+                            _KernelInputQueue.enqueue("+");
+                        }
+                        else {
+                            _KernelInputQueue.enqueue("=");
+                        }
+                        break;
+                    }
+                    case 188: {
+                        if (isShifted) {
+                            _KernelInputQueue.enqueue("<");
+                        }
+                        else {
+                            _KernelInputQueue.enqueue(",");
+                        }
+                        break;
+                    }
+                    case 189: {
+                        if (isShifted) {
+                            _KernelInputQueue.enqueue("_");
+                        }
+                        else {
+                            _KernelInputQueue.enqueue("-");
+                        }
+                        break;
+                    }
+                    case 190: {
+                        if (isShifted) {
+                            _KernelInputQueue.enqueue(">");
+                        }
+                        else {
+                            _KernelInputQueue.enqueue("/");
+                        }
+                        break;
+                    }
+                    case 191: {
+                        if (isShifted) {
+                            _KernelInputQueue.enqueue("?");
+                        }
+                        else {
+                            _KernelInputQueue.enqueue("/");
+                        }
+                        break;
+                    }
+                    case 192: {
+                        if (isShifted) {
+                            _KernelInputQueue.enqueue("~");
+                        }
+                        else {
+                            _KernelInputQueue.enqueue("`");
+                        }
+                        break;
+                    }
+                    case 219: {
+                        if (isShifted) {
+                            _KernelInputQueue.enqueue("{");
+                        }
+                        else {
+                            _KernelInputQueue.enqueue("[");
+                        }
+                        break;
+                    }
+                    case 220: {
+                        if (isShifted) {
+                            _KernelInputQueue.enqueue("|");
+                        }
+                        else {
+                            _KernelInputQueue.enqueue("\\");
+                        }
+                        break;
+                    }
+                    case 221: {
+                        if (isShifted) {
+                            _KernelInputQueue.enqueue("}");
+                        }
+                        else {
+                            _KernelInputQueue.enqueue("]");
+                        }
+                        break;
+                    }
+                    case 222: {
+                        if (isShifted) {
+                            _KernelInputQueue.enqueue("\"");
+                        }
+                        else {
+                            _KernelInputQueue.enqueue("'");
+                        }
+                        break;
                     }
                 }
-                else if (matchingCmds.length > 0) {
-                    // Clear current line
-                    _DrawingContext.clearRect(0, _Console.currentYPosition - _DefaultFontSize, _Canvas.width, _DefaultFontSize + 2 * _FontHeightMargin);
-                    _DrawingContext.clearRect(0, _Console.currentYPosition + _FontHeightMargin, _Canvas.width, _DefaultFontSize + 2 * _FontHeightMargin + _Console.currentYPosition);
-                    _Console.currentXPosition = 0;
-                    // Output matching commands, 3 per line
-                    matchingCmds.forEach((cmd, index) => {
-                        _Console.putText(cmd.command + "   ");
-                        if ((index + 1) % 3 === 0)
-                            _Console.advanceLine();
-                    });
-                    if (matchingCmds.length % 3 !== 0)
-                        _Console.advanceLine();
-                    // Reprint prompt and entered text
-                    _OsShell.putPrompt();
-                    _Console.putText(_Console.buffer);
-                }
-            }
-            else if (keyCode === 38) { // up arrow
-                // Get the most recent command from the command history
-                if (_CommandLog.length === 0)
-                    return;
-                if (_CommandLogPosition === null) {
-                    _CommandLogPosition = _CommandLog.length;
-                }
-                if (_CommandLogPosition > 0) {
-                    _CommandLogPosition--;
-                    setConsoleBuffer(_CommandLog[_CommandLogPosition]);
-                    clearConsoleToRightOfPrompt();
-                    _Console.putText(_Console.buffer);
-                }
-            }
-            function setConsoleBuffer(command) {
-                _Console.buffer = command || ""; // Set to empty if command is undefined or null
-            }
-            function clearConsoleToRightOfPrompt() {
-                const yStart = _Console.currentYPosition;
-                const yPosition = _Console.currentYPosition;
-                _DrawingContext.clearRect(_DefaultFontSize, yStart - _DefaultFontSize, _Canvas.width, _DefaultFontSize + 2 * _FontHeightMargin);
-                _DrawingContext.clearRect(0, yStart + _FontHeightMargin, _Canvas.width, _DefaultFontSize + 2 * _FontHeightMargin + yPosition);
             }
         }
     }

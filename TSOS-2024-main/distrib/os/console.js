@@ -12,6 +12,8 @@ var TSOS;
         currentXPosition;
         currentYPosition;
         buffer;
+        commandHistory = [];
+        commandIndex = 0;
         constructor(currentFont = _DefaultFontFamily, currentFontSize = _DefaultFontSize, currentXPosition = 0, currentYPosition = _DefaultFontSize, buffer = "") {
             this.currentFont = currentFont;
             this.currentFontSize = currentFontSize;
@@ -36,11 +38,71 @@ var TSOS;
                 var chr = _KernelInputQueue.dequeue();
                 // Check to see if it's "special" (enter or ctrl-c) or "normal" (anything else that the keyboard device driver gave us).
                 if (chr === String.fromCharCode(13)) { // the Enter key
-                    // The enter key marks the end of a console command, so ...
-                    // ... tell the shell ...
                     _OsShell.handleInput(this.buffer);
-                    // ... and reset our buffer.
+                    this.commandHistory.push(this.buffer);
+                    this.commandIndex = this.commandHistory.length;
                     this.buffer = "";
+                    //Backspace
+                }
+                else if (chr === String.fromCharCode(8)) {
+                    this.backspace();
+                }
+                //Tab key completion
+                else if (chr === String.fromCharCode(9)) {
+                    if (this.buffer.length > 0) {
+                        var match = [];
+                        for (var i = 0; i < _OsShell.commandList.length; i++) {
+                            if (this.buffer == _OsShell.commandList[i].command.substr(0, this.buffer.length)) {
+                                match.push(_OsShell.commandList[i].command);
+                            }
+                        }
+                        if (match.length === 0) {
+                            _StdOut.putText("Its not me its you. No matches found.");
+                        }
+                        else if (match.length === 1) {
+                            this.buffer = match[0];
+                            this.advanceLine();
+                            _StdOut.putText(this.buffer);
+                        }
+                        else {
+                            for (var index = 0; index < match.length; index++) {
+                                this.advanceLine();
+                                this.putText(match[index]);
+                            }
+                            this.advanceLine();
+                            _StdOut.putText(this.buffer);
+                        }
+                    }
+                }
+                //Up arrow
+                else if (chr === String.fromCharCode(38)) {
+                    if (this.commandIndex > 0) {
+                        this.commandIndex -= 1;
+                        this.clearCurrentLine();
+                        _StdOut.putText(this.commandHistory[this.commandIndex]);
+                    }
+                    else if (this.commandIndex === 0) {
+                        this.clearCurrentLine();
+                        _StdOut.putText(this.commandHistory[this.commandIndex]);
+                        _StdOut.putText("---End of the line pal---");
+                    }
+                    else {
+                        _StdOut.putText("No command history.");
+                    }
+                }
+                // Down arrow
+                else if (chr === String.fromCharCode(40)) {
+                    if (this.commandIndex < this.commandHistory.length - 1) {
+                        this.commandIndex += 1;
+                        // Clear line
+                        while (this.buffer != "") {
+                            this.backspace();
+                        }
+                        _StdOut.putText(this.commandHistory[this.commandIndex]);
+                    }
+                    else {
+                        _StdOut.putText("You have to go up first, this is embarrassing");
+                    }
                 }
                 else {
                     // This is a "normal" character, so ...
@@ -74,17 +136,36 @@ var TSOS;
                 _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) +
                 _FontHeightMargin;
             if (this.currentYPosition > _Canvas.height) {
-                this.scrollUp();
+                // Determine cli line size and take screenshot of canvas - cli line size at top
+                var CLILine = this.currentYPosition - _Canvas.height + _FontHeightMargin;
+                var BMSnip = _DrawingContext.getImageData(0, 0, _Canvas.width, this.currentYPosition + _FontHeightMargin);
+                this.clearScreen();
+                // Drop cursor to bottom of screen
+                _DrawingContext.putImageData(BMSnip, 0, -CLILine);
+                this.currentYPosition -= CLILine;
             }
         }
-        scrollUp() {
-            var lineHeight = _DefaultFontSize + _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) + _FontHeightMargin;
-            // Copy the canvas content upwards by one line's height
-            var imageData = _DrawingContext.getImageData(0, lineHeight, _Canvas.width, _Canvas.height - lineHeight);
-            this.clearScreen();
-            _DrawingContext.putImageData(imageData, 0, 0);
-            // Reset Y position to the bottom of the canvas
-            this.currentYPosition -= lineHeight;
+        clearCurrentLine() {
+            if (this.buffer) {
+                // Calculate the width of the current line
+                const lineWidth = _DrawingContext.measureText(this.currentFont, this.currentFontSize, this.buffer);
+                // Clear the current line by drawing a rectangle over it
+                _DrawingContext.clearRect(this.currentXPosition - lineWidth, this.currentYPosition - _DefaultFontSize, this.currentXPosition, this.currentYPosition + _FontHeightMargin);
+                // Reset the buffer
+                this.buffer = "";
+            }
+        }
+        backspace() {
+            if (this.buffer.length > 0) {
+                var delChar = this.buffer[this.buffer.length - 1];
+                var XOffSet = _DrawingContext.measureText(this.currentFont, this.currentFontSize, delChar);
+                var YOffset = this.currentYPosition + _DefaultFontSize +
+                    _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) +
+                    _FontHeightMargin;
+                this.currentXPosition = this.currentXPosition - XOffSet;
+                _DrawingContext.clearRect(this.currentXPosition, this.currentYPosition - _DefaultFontSize, this.currentXPosition + XOffSet, YOffset);
+                this.buffer = this.buffer.slice(0, -1);
+            }
         }
     }
     TSOS.Console = Console;

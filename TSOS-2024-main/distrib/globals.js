@@ -51,7 +51,4 @@ var _GLaDOS = null; // If the above is linked in, this is the instantiated insta
 var onDocumentLoad = function () {
     TSOS.Control.hostInit();
 };
-//This is used with up and down arrow keys
-var _CommandLog = [];
-var _CommandLogPosition = null;
 //# sourceMappingURL=globals.js.map
