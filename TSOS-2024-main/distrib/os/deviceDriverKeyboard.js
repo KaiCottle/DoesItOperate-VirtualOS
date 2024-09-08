@@ -21,7 +21,6 @@ var TSOS;
             // Initialization routine for this, the kernel-mode Keyboard Device Driver.
             this.status = "loaded";
         }
-        //Changing the logic with how this is processed. Don't like the unnecessary work done with the previous. Must complete later today.
         krnKbdDispatchKeyPress(params) {
             // Parse the params.
             var keyCode = params[0];

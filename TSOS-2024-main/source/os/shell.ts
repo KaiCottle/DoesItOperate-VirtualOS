@@ -56,6 +56,11 @@ module TSOS {
                                   "- This is the help command. Seek help.");
             this.commandList[this.commandList.length] = sc;
 
+            sc = new ShellCommand(this.shellBsod,
+                "bsod",
+                "Displays the Blue Screen of Death.");
+            this.commandList[this.commandList.length] = sc;
+
             // shutdown
             sc = new ShellCommand(this.shellShutdown,
                                   "shutdown",
@@ -238,6 +243,10 @@ module TSOS {
             let daysLeft = Math.floor(Math.random() * 100) + 1;
             _StdOut.putText(`You have: ${daysLeft} days left.`);
         }
+
+        public shellBsod(args: string[]) {
+            _Console.BSOD();
+         }
         
         public shellStatus(args: string[]) {
             if (args.length > 0) {
@@ -297,6 +306,9 @@ module TSOS {
                         break;
                     case "status":
                         _StdOut.putText("Sets the status. Usage: status <string>");
+                        break;
+                    case "bsod":
+                        _StdOut.putText("Displays the Blue Screen of Death.");
                         break;
                     case "help":
                         _StdOut.putText("Displays a list of available commands.");

@@ -26,7 +26,6 @@ module TSOS {
             this.status = "loaded";
         }
 
-        //Changing the logic with how this is processed. Don't like the unnecessary work done with the previous. Must complete later today.
         public krnKbdDispatchKeyPress(params) {
             // Parse the params.
             var keyCode = params[0];

@@ -39,6 +39,8 @@ var TSOS;
             // help
             sc = new TSOS.ShellCommand(this.shellHelp, "help", "- This is the help command. Seek help.");
             this.commandList[this.commandList.length] = sc;
+            sc = new TSOS.ShellCommand(this.shellBsod, "bsod", "Displays the Blue Screen of Death.");
+            this.commandList[this.commandList.length] = sc;
             // shutdown
             sc = new TSOS.ShellCommand(this.shellShutdown, "shutdown", "- Shuts down the virtual OS but leaves the underlying host / hardware simulation running.");
             this.commandList[this.commandList.length] = sc;
@@ -191,6 +193,9 @@ var TSOS;
             let daysLeft = Math.floor(Math.random() * 100) + 1;
             _StdOut.putText(`You have: ${daysLeft} days left.`);
         }
+        shellBsod(args) {
+            _Console.BSOD();
+        }
         shellStatus(args) {
             if (args.length > 0) {
                 const status = args.join(' ');
@@ -246,6 +251,9 @@ var TSOS;
                         break;
                     case "status":
                         _StdOut.putText("Sets the status. Usage: status <string>");
+                        break;
+                    case "bsod":
+                        _StdOut.putText("Displays the Blue Screen of Death.");
                         break;
                     case "help":
                         _StdOut.putText("Displays a list of available commands.");

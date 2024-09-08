@@ -135,8 +135,9 @@ var TSOS;
             this.currentYPosition += _DefaultFontSize +
                 _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) +
                 _FontHeightMargin;
+            // Scroll
             if (this.currentYPosition > _Canvas.height) {
-                // Determine cli line size and take screenshot of canvas - cli line size at top
+                // Get CLI size and take screenshot
                 var CLILine = this.currentYPosition - _Canvas.height + _FontHeightMargin;
                 var BMSnip = _DrawingContext.getImageData(0, 0, _Canvas.width, this.currentYPosition + _FontHeightMargin);
                 this.clearScreen();
@@ -166,6 +167,24 @@ var TSOS;
                 _DrawingContext.clearRect(this.currentXPosition, this.currentYPosition - _DefaultFontSize, this.currentXPosition + XOffSet, YOffset);
                 this.buffer = this.buffer.slice(0, -1);
             }
+        }
+        BSOD() {
+            this.clearScreen();
+            // Set the background to a deep blue color
+            _DrawingContext.fillStyle = "#001f3f";
+            _DrawingContext.fillRect(0, 0, _Canvas.width, _Canvas.height);
+            _DrawingContext.font = '120px serif';
+            _DrawingContext.fillStyle = "#FF4136";
+            _DrawingContext.fillText("💀", _Canvas.width / 2 - 60, 180);
+            // Display the error message
+            _DrawingContext.font = '40px serif';
+            _DrawingContext.fillStyle = "white";
+            _DrawingContext.font = '25px serif';
+            _DrawingContext.fillText("SYSTEM FAILURE", 50, 320);
+            _DrawingContext.fillText("All processes terminated.", 50, 360);
+            _DrawingContext.font = '20px serif';
+            _DrawingContext.fillText("Press Ctrl+Alt+Del to attempt a restart.", 50, 420);
+            _Kernel.krnShutdown();
         }
     }
     TSOS.Console = Console;
