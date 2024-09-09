@@ -85,7 +85,7 @@
                         } else if (this.commandIndex === 0) {
                             this.clearCurrentLine();
                             _StdOut.putText(this.commandHistory[this.commandIndex]);
-                            _StdOut.putText("---End of the line pal---");
+                            _StdOut.putText("--End Up--");
                         } else {
                             _StdOut.putText("No command history.");
                         }
@@ -102,7 +102,7 @@
                             _StdOut.putText(this.commandHistory[this.commandIndex]);       
                         }
                         else{
-                            _StdOut.putText("You have to go up first, this is embarrassing.");
+                            _StdOut.putText("--End down--");
                         }
                     }
                     else {
