@@ -103,53 +103,19 @@
    
 
    <div class="task-bar">
-      <div id="info-dash">
-         <label id="date-time"></label>
-         <label id="status">Status: I guess it works</label>
-      </div>  
-   </div>
-   
-   <style>
-      .task-bar {
-         display: flex;
-         align-items: center;
-         justify-content: space-between;
-         padding: 5px;
-         background-color: #245DDA;
-         border-bottom: 2px solid #245DDA;
-         color: white;
-         position: fixed;
-         bottom: 0;
-         left: 0;
-         width: 100%;
-         height: 40px;
-         font-family: Tahoma, sans-serif; /* XP-style font */
-         box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-      }
-   
-      #info-dash {
-         display: flex;
-         flex-direction: column;
-         margin-left: 10px;
-      }
-   
-      #date-time, #status {
-         margin: 0;
-         padding: 0;
-         font-size: 10pt;
-      }
-   
-      /* Optional: Make text align more like XP's taskbar */
-      #date-time {
-         font-weight: bold;
-         margin-bottom: 3px;
-      }
-   
-      #status {
-         font-style: italic;
-      }
-   </style>
-   
+      <div class="windows-logo">
+        <img src="distrib/images/logo.png" alt="Windows Logo" height="30" />
+      </div>
+      
+      <div class="status">
+        <label id="status">Status: I guess it works</label>
+      </div>
+      
+      <div class="date-time">
+        <label id="date-time"></label>
+      </div>
+    </div>
+
 
 <script>
    function updateDateTime() {
