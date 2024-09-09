@@ -76,33 +76,41 @@
                         }
                     }
     
-                    //Up arrow
+                    //Up arrow -> Referenced MarshManOS
                     else if (chr === String.fromCharCode(38)) {
                         if (this.commandIndex > 0) {
+                            // clear the whole line
+                            this.clearLine();
+                            // move curser back to the start
+                            this.currentXPosition = 0;
+                            // add the > or what ever the user changes it to
+                            this.putText(_OsShell.promptStr);
+                            // Get the previous command
                             this.commandIndex -= 1;
-                            this.clearCurrentLine();
-                            _StdOut.putText(this.commandHistory[this.commandIndex]);
-                        } else if (this.commandIndex === 0) {
-                            this.clearCurrentLine();
-                            _StdOut.putText(this.commandHistory[this.commandIndex]);
-                            _StdOut.putText("--End Up--");
-                        } else {
-                            _StdOut.putText("No command history.");
+                            var prevCommand = this.commandHistory[this.commandIndex];
+                            // Display the previous command on the console
+                            this.putText(prevCommand);
+                            // Update the buffer with the previous command
+                            this.buffer = prevCommand;
                         }
                     } 
                 
-                    // Down arrow
+                    // Down arrow -> Referenced MarshManOS
                     else if(chr === String.fromCharCode(40)){
-                        if (this.commandIndex < this.commandHistory.length-1){
-                            this.commandIndex += 1; 
-                            // Clear line
-                            while (this.buffer != ""){
-                                this.backspace();
-                            }
-                            _StdOut.putText(this.commandHistory[this.commandIndex]);       
-                        }
-                        else{
-                            _StdOut.putText("--End down--");
+                        if ((this.commandIndex + 1) < this.commandHistory.length) {
+                            // clear the whole line
+                            this.clearLine();
+                            // move curser back to the start
+                            this.currentXPosition = 0;
+                            // add the > or what ever the user changes it to
+                            this.putText(_OsShell.promptStr);
+                            // Get the next command
+                            this.commandIndex += 1;
+                            var nextCommand = this.commandHistory[this.commandIndex];
+                            // Display the next command on the console
+                            this.putText(nextCommand);
+                            // Update the buffer with the next command
+                            this.buffer = nextCommand;
                         }
                     }
                     else {
@@ -143,7 +151,7 @@
                     var CLILine = this.currentYPosition - _Canvas.height + _FontHeightMargin;
                     var BMSnip = _DrawingContext.getImageData(0,0,_Canvas.width,this.currentYPosition + _FontHeightMargin);
                     this.clearScreen();
-                    // Drop cursor to bottom of screen
+                    // Drop cursor
                     _DrawingContext.putImageData(BMSnip,0,-CLILine);
                     this.currentYPosition -= CLILine
                 }
@@ -160,6 +168,13 @@
                     // Reset the buffer
                     this.buffer = "";
                 }
+            }
+
+            //This section was used from MarshManOS. I needed to change logic so that my up + downarrow would clear screen properly hence why theres 2 of these
+            clearLine() {
+                const lineHeight = this.currentFontSize + _DrawingContext.fontDescent(this.currentFont, this.currentFontSize);
+                // added +1 because there was a small line left
+                _DrawingContext.clearRect(0, this.currentYPosition - lineHeight + 4, _Canvas.width, lineHeight);
             }
     
             public backspace(): void{
