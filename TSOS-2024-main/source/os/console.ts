@@ -177,22 +177,38 @@
     
             public BSOD(): void {
                 this.clearScreen();
-                // Set the background to a deep blue color
-                _DrawingContext.fillStyle = "#001f3f"; 
+            
+                _DrawingContext.fillStyle = "#0000AA";
                 _DrawingContext.fillRect(0, 0, _Canvas.width, _Canvas.height);
-                
-                _DrawingContext.font = '120px serif';
-                _DrawingContext.fillStyle = "#FF4136";
-                _DrawingContext.fillText("💀", _Canvas.width / 2 - 60, 180);
-                _DrawingContext.font = '40px serif';
+            
+                _DrawingContext.font = '20px Lucida Console, monospace';
                 _DrawingContext.fillStyle = "white";
-                _DrawingContext.font = '25px serif';
-                _DrawingContext.fillText("SYSTEM FAILURE", 50, 320);
-                _DrawingContext.fillText("All processes terminated.", 50, 360);
-                _DrawingContext.font = '20px serif';
-                _DrawingContext.fillText("Press Ctrl+Alt+Del to attempt a restart.", 50, 420);
-                
+            
+                _DrawingContext.fillText("A problem has been detected and Windows has been shut down to prevent", 20, 50);
+                _DrawingContext.fillText("damage to your computer.", 20, 80);
+            
+                _DrawingContext.fillText("UNMOUNTABLE_BOOT_VOLUME", 20, 130);
+            
+                _DrawingContext.fillText("If this is the first time you've seen this error screen,", 20, 180);
+                _DrawingContext.fillText("restart your computer. If this screen appears again, follow", 20, 210);
+                _DrawingContext.fillText("these steps:", 20, 240);
+            
+                _DrawingContext.fillText("Check to make sure any new hardware or software is properly installed.", 20, 280);
+                _DrawingContext.fillText("If this is a new installation, ask your hardware or software manufacturer", 20, 310);
+                _DrawingContext.fillText("for any Windows updates you might need.", 20, 340);
+            
+                _DrawingContext.fillText("If problems continue, disable or remove any newly installed hardware", 20, 380);
+                _DrawingContext.fillText("or software. Disable BIOS memory options such as caching or shadowing.", 20, 410);
+                _DrawingContext.fillText("If you need to use Safe Mode to remove or disable components, restart", 20, 440);
+                _DrawingContext.fillText("your computer, press F8 to select Advanced Startup Options, and then", 20, 470);
+                _DrawingContext.fillText("select Safe Mode.", 20, 500);
+            
+                _DrawingContext.fillText("Technical Information:", 20, 550);
+            
+                _DrawingContext.fillText("*** STOP: 0x000000ED (0x80F12BD0, 0xC000009C, 0x00000000, 0x00000000)", 20, 580);
+            
                 _Kernel.krnShutdown();
             }
+            
         }
     }
