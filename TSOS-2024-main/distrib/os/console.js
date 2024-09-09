@@ -115,24 +115,15 @@ var TSOS;
             }
         }
         putText(text) {
-            /*  My first inclination here was to write two functions: putChar() and putString().
-                Then I remembered that JavaScript is (sadly) untyped and it won't differentiate
-                between the two. (Although TypeScript would. But we're compiling to JavaScipt anyway.)
-                So rather than be like PHP and write two (or more) functions that
-                do the same thing, thereby encouraging confusion and decreasing readability, I
-                decided to write one function and use the term "text" to connote string or char.
-            */
+            // takes a string of text, draws each character one by one, advance to a new line if needed.
             if (text !== "") {
-                // Approach for line wrap: break the input text int characters and determine if each char will
-                // surpass the width of the canvas, if so then advanceLine and print, if not continue printing on line
                 for (var i = 0; i < text.length; i++) {
-                    var Linetxt = text.charAt(i);
-                    var Xoffset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, Linetxt);
-                    // check to see if character will surpass the width of the canvas
+                    var txt = text.charAt(i);
+                    var Xoffset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, txt);
                     if (this.currentXPosition + Xoffset > _Canvas.width) {
                         this.advanceLine();
                     }
-                    _DrawingContext.drawText(this.currentFont, this.currentFontSize, this.currentXPosition, this.currentYPosition, Linetxt);
+                    _DrawingContext.drawText(this.currentFont, this.currentFontSize, this.currentXPosition, this.currentYPosition, txt);
                     this.currentXPosition = this.currentXPosition + Xoffset;
                 }
             }
