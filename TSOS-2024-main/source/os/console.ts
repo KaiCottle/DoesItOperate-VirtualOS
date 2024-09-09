@@ -77,7 +77,7 @@
                     }
     
                     //Up arrow -> Referenced MarshManOS
-                    else if (chr === String.fromCharCode(38)) {
+                    else if (chr === String.fromCharCode(0x2191)) {
                         if (this.commandIndex > 0) {
                             // clear the whole line
                             this.clearLine();
@@ -96,7 +96,7 @@
                     } 
                 
                     // Down arrow -> Referenced MarshManOS
-                    else if(chr === String.fromCharCode(40)){
+                    else if(chr === String.fromCharCode(0x2193)){
                         if ((this.commandIndex + 1) < this.commandHistory.length) {
                             // clear the whole line
                             this.clearLine();

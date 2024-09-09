@@ -97,11 +97,11 @@ var TSOS;
                         break;
                     }
                     case 38: { // up arrow
-                        _KernelInputQueue.enqueue(String.fromCharCode(38));
+                        _KernelInputQueue.enqueue(String.fromCharCode(0x2191));
                         break;
                     }
                     case 40: { // down arrow
-                        _KernelInputQueue.enqueue(String.fromCharCode(40));
+                        _KernelInputQueue.enqueue(String.fromCharCode(0x2193));
                         break;
                     }
                 }
