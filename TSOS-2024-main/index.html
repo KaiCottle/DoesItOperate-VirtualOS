@@ -104,8 +104,13 @@
 
    <div class="task-bar">
       <div class="windows-logo">
-        <img src="distrib/images/logo.png" alt="Windows Logo" height="30" />
+        <img src="distrib/images/logo.png" alt="Windows Logo" height="30" id="windows-logo" />
       </div>
+
+      <audio id="click-sound">
+         <source src="distrib/audio/startup-sound.mp3" type="audio/mpeg">
+         Your browser does not support the audio element.
+      </audio>
       
       <div class="status">
         <label id="status">Status: I guess it works</label>
@@ -115,7 +120,6 @@
         <label id="date-time"></label>
       </div>
     </div>
-
 
 <script>
    function updateDateTime() {
@@ -128,6 +132,34 @@
    updateDateTime();
 </script>
 
+<script>
+   document.addEventListener("DOMContentLoaded", function() {
+      const logo = document.getElementById("windows-logo");
+      const startButton = document.getElementById("btnStartOS");
+      //Play sound when windows logo is clicked
+      if (logo) {
+         logo.addEventListener("click", playSound);
+      } else {
+         console.log("Element with id 'windows-logo' not found");
+      }
+      //Play sound when console is started
+      if (startButton) {
+         startButton.addEventListener("click", playSound);
+      } else {
+         console.log("Element with id 'btnStartOS' not found");
+      }
+   });
+
+   //Check for sound file and play it
+   function playSound() {
+      const sound = document.getElementById("click-sound");
+      if (sound) {
+         sound.play().catch((error) => console.log("Error playing sound:", error));
+      } else {
+         console.log("Sound element not found");
+      }
+   }
+</script>
 
 <p class="footerText" style="clear:both;">
    <br>
