@@ -85,6 +85,7 @@ var TSOS;
                 }
             }
         }
+        //Referenced from MarshManOS
         handleUpArrow() {
             if (this.commandIndex > 0) {
                 this.clearLine();
@@ -96,6 +97,7 @@ var TSOS;
                 this.buffer = prevCommand;
             }
         }
+        //Referenced from MarshManOS
         handleDownArrow() {
             if ((this.commandIndex + 1) < this.commandHistory.length) {
                 this.clearLine();
@@ -107,6 +109,7 @@ var TSOS;
                 this.buffer = nextCommand;
             }
         }
+        // Takes a string of text, draws each character one by one, advance to a new line if needed. -> Rapper Logic (not a typo, just funny)
         putText(text) {
             if (text !== "") {
                 for (var i = 0; i < text.length; i++) {
@@ -138,6 +141,7 @@ var TSOS;
                 this.buffer = "";
             }
         }
+        //Referenced from MarshManOS -> Needed this to work for up + down arrow, hence why there are two clear line functions.
         clearLine() {
             const lineHeight = this.currentFontSize + _DrawingContext.fontDescent(this.currentFont, this.currentFontSize);
             _DrawingContext.clearRect(0, this.currentYPosition - lineHeight + 4, _Canvas.width, lineHeight);

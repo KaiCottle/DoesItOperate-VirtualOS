@@ -203,13 +203,27 @@ var TSOS;
         shellLoad(args) {
             const programInput = document.getElementById("taProgramInput");
             const program = programInput.value.trim();
-            // Validate the program
-            const isValid = /^[0-9A-Fa-f\s]+$/.test(program);
-            if (isValid) {
-                _StdOut.putText("Program loaded successfully.");
+            let isValid = false;
+            let even = false;
+            let checkEven = -1;
+            checkEven = program.length;
+            if (checkEven % 2 == 0) {
+                even = true;
+            }
+            if (even) {
+                _StdOut.putText("Valid input.");
+                isValid = true;
+                _StdOut.advanceLine();
             }
             else {
-                _StdOut.putText("Invalid program. Only hex digits and spaces are valid.");
+                _StdOut.putText("Invalid input.");
+                _StdOut.advanceLine();
+            }
+            if (isValid) {
+                let userInputArray = [];
+                for (let m = 0; m < program.length; m += 2) {
+                    userInputArray.push(program[m] + program[m + 1]);
+                }
             }
         }
         shellStatus(args) {

@@ -25,9 +25,6 @@ module TSOS {
             _Console = new Console();             // The command line interface / console I/O device.
             _Console.init();
 
-            // Initialize the memory manager
-            _MemoryManager = new memoryManager();
-
             // Initialize standard input and output to the _Console.
             _StdIn  = _Console;
             _StdOut = _Console;
