@@ -103,6 +103,11 @@ module TSOS {
             // Stop the interval that's simulating our clock pulse.
             clearInterval(_hardwareClockID);
             // TODO: Is there anything else we need to do here?
+            _CPU = new Cpu();	
+            _CPU.init();
+            _Memory	= new Memory();
+            _Memory.init();
+            _MemoryAccessor	= new MemoryAccessor();
         }
 
         public static hostBtnReset_click(btn): void {
