@@ -42,6 +42,7 @@ var TSOS;
                 _GLaDOS = new Glados();
                 _GLaDOS.init();
             }
+            //Initialize Displays
         }
         static hostLog(msg, source = "?") {
             // Note the OS CLOCK.

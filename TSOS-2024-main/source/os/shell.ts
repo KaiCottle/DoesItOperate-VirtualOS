@@ -253,37 +253,48 @@ module TSOS {
             _Console.BSOD();
         }
 
-        public shellLoad(args: string[]) {
+        public shellLoad(args: string[]){
             const programInput = document.getElementById("taProgramInput") as HTMLTextAreaElement;
             const program = programInput.value.trim();
-
-            let isValid = false;
-            let even = false;
-            let checkEven = -1;
-
-            checkEven = program.length;
-
-            if (checkEven % 2 == 0) {
-                even = true;
+            const hexDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', ' '];
+        
+            if (!program.length) {
+                _StdOut.putText("Invalid program. Please enter only hex digits and spaces.");
+                return;
             }
-            
-            if(even){
-                _StdOut.putText("Valid input.");
-                isValid = true;
-                _StdOut.advanceLine();
-            }
-            else {
-                _StdOut.putText("Invalid input.");
-                _StdOut.advanceLine();
-            }
-            if (isValid) {
-                let userInputArray: Array<string> = [];
-                for (let m = 0; m < program.length; m += 2) {
-                    userInputArray.push(program[m] + program[m + 1]);
+        
+            for (const char of program) {
+                if (!hexDigits.includes(char)) {
+                    _StdOut.putText("Invalid program. Please enter only hex digits and spaces.");
+                    return;
                 }
             }
+
+            const arrayProgram = program.split(" ");
+            const processID = _MemoryManager.load(arrayProgram, 1);
+            _StdOut.putText(`Process ID: ${processID}`);
         }
 
+        public shellRun(args: string[]): void {
+            if (args.length === 0) {
+                _StdOut.putText("Usage: run <pid>. Please supply a PID.");
+                return;
+            }
+        
+            const pid = parseInt(args[0]);
+            
+            if (isNaN(pid)) {
+                _StdOut.putText("Invalid PID. Please enter a valid PID.");
+                return;
+            }
+        
+            if (_MemoryManager.doesProcessExist(pid)) {
+                _CPU.runProcess(pid);
+            } else {
+                _StdOut.putText("Process does not exist.");
+            }
+        }
+        
         
         public shellStatus(args: string[]) {
             if (args.length > 0) {
