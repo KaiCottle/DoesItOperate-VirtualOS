@@ -5,7 +5,7 @@ module TSOS{
 
         init(){
             for(let i = 0; i < 768; i++){
-                this.memoryArray[i] = "00";
+                this.totalMemory[i] = 0x00;
             }
         }
     }
