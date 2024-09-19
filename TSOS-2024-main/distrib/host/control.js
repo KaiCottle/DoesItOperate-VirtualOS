@@ -43,6 +43,22 @@ var TSOS;
                 _GLaDOS.init();
             }
             //Initialize Displays
+            this.initMemoryDisplay();
+        }
+        static initMemoryDisplay() {
+            const memoryDisplay = document.getElementById("memoryTable");
+            for (let i = 0; i < _MemorySize; i += 8) {
+                const row = memoryDisplay.insertRow(-1); // Insert at the end of the table
+                const addressCell = row.insertCell(0);
+                //Had a different way to do address and asked ChatGPT "Is there a better way to do this"
+                //The response: "Utilized padStart to handle zero-padding of the hexadecimal address, eliminating multiple if statements."
+                const address = `0x${i.toString(16).toUpperCase().padStart(3, '0')}`;
+                addressCell.textContent = address;
+                for (let j = 0; j < 8; j++) {
+                    const cell = row.insertCell(j + 1);
+                    cell.textContent = "00";
+                }
+            }
         }
         static hostLog(msg, source = "?") {
             // Note the OS CLOCK.
@@ -93,6 +109,24 @@ var TSOS;
         static hostBtnReset_click(btn) {
             // The easiest and most thorough way to do this is to reload (not refresh) the document.
             location.reload();
+        }
+        static updateMemoryDisplay() {
+            const memoryDisplay = document.getElementById("memoryTable");
+            const rows = memoryDisplay.rows;
+            let memoryPointer = 0;
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const addressCell = row.cells[0];
+                //Had a different way to do address and asked ChatGPT "Is there a better way to do this"
+                //The response: "Utilized padStart to handle zero-padding of the hexadecimal address, eliminating multiple if statements."
+                const address = `0x${(i * 8).toString(16).toUpperCase().padStart(3, '0')}`;
+                addressCell.textContent = address;
+                for (let j = 1; j <= 8; j++) {
+                    const cell = row.cells[j];
+                    cell.textContent = _Memory.totalMemory[memoryPointer];
+                    memoryPointer++;
+                }
+            }
         }
     }
     TSOS.Control = Control;

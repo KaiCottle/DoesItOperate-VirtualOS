@@ -52,7 +52,27 @@ module TSOS {
             }
 
             //Initialize Displays
+            this.initMemoryDisplay();
         }
+        public static initMemoryDisplay(): void {
+            const memoryDisplay = document.getElementById("memoryTable") as HTMLTableElement;
+        
+            for (let i = 0; i < _MemorySize; i += 8) {
+                const row = memoryDisplay.insertRow(-1); // Insert at the end of the table
+                const addressCell = row.insertCell(0);
+
+                //Had a different way to do address and asked ChatGPT "Is there a better way to do this"
+                //The response: "Utilized padStart to handle zero-padding of the hexadecimal address, eliminating multiple if statements."
+                const address = `0x${i.toString(16).toUpperCase().padStart(3, '0')}`;
+                addressCell.textContent = address;
+                for (let j = 0; j < 8; j++) {
+                    const cell = row.insertCell(j + 1);
+                    cell.textContent = "00";
+                }
+            }
+        }
+        
+
 
         public static hostLog(msg: string, source: string = "?"): void {
             // Note the OS CLOCK.
@@ -115,6 +135,27 @@ module TSOS {
         public static hostBtnReset_click(btn): void {
             // The easiest and most thorough way to do this is to reload (not refresh) the document.
             location.reload();
+        }
+
+        public static updateMemoryDisplay(): void {
+            const memoryDisplay = document.getElementById("memoryTable") as HTMLTableElement;
+            const rows = memoryDisplay.rows;
+            let memoryPointer = 0;
+        
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const addressCell = row.cells[0];
+                //Had a different way to do address and asked ChatGPT "Is there a better way to do this"
+                //The response: "Utilized padStart to handle zero-padding of the hexadecimal address, eliminating multiple if statements."
+                const address = `0x${(i * 8).toString(16).toUpperCase().padStart(3, '0')}`;
+                addressCell.textContent = address;
+        
+                for (let j = 1; j <= 8; j++) {
+                    const cell = row.cells[j];
+                    cell.textContent = _Memory.totalMemory[memoryPointer];
+                    memoryPointer++;
+                }
+            }
         }
     }
 }

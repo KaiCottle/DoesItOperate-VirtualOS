@@ -269,7 +269,6 @@ module TSOS {
                     return;
                 }
             }
-
             const arrayProgram = program.split(" ");
             const processID = _MemoryManager.load(arrayProgram, 1);
             _StdOut.putText(`Process ID: ${processID}`);
