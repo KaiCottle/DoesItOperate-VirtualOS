@@ -6,7 +6,14 @@ var TSOS;
         residentList = [];
         readyQueue = new TSOS.Queue();
         allocated = new Array(numPrograms).fill(-1);
-        constructor() { }
+        constructor() {
+            this.residentList = [];
+            this.readyQueue = new TSOS.Queue();
+            this.allocated = new Array(numPrograms);
+            for (var i = 0; i < this.allocated.length; i++) {
+                this.allocated[i] = -1;
+            }
+        }
         load(program, priority) {
             var pcb = new pcb(priority);
             pcb.processState = "Resident";
@@ -32,6 +39,7 @@ var TSOS;
             TSOS.Control.updateMemoryDisplay();
             return true;
         }
+        //Seperated this logic from the allocateMemory function to make it easier to test
         findFreeMemoryBlock() {
             return this.allocated.findIndex(slot => slot === -1);
         }

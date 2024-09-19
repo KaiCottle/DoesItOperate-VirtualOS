@@ -3,11 +3,19 @@ module TSOS {
     const numPrograms = 3;   // Maximum number of programs
 
     export class MemoryManager {
+
         public residentList: TSOS.pcb[] = [];
         public readyQueue: TSOS.Queue = new Queue();
         private allocated: number[] = new Array(numPrograms).fill(-1);
 
-        constructor() {}
+        constructor() {
+            this.residentList = [];
+            this.readyQueue = new Queue();
+            this.allocated = new Array(numPrograms);
+            for (var i = 0; i < this.allocated.length; i++) {
+                this.allocated[i] = -1;
+            }
+        }
 
         public load(program: Array<string>, priority: number): number {
             var pcb = new pcb(priority);
