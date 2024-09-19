@@ -86,7 +86,7 @@ var TSOS;
             // TODO: Is there anything else we need to do here?
             _CPU = new TSOS.Cpu();
             _CPU.init();
-            _Memory = new TSOS.Memory();
+            _Memory = new TSOS.Memory(_MemorySize);
             _Memory.init();
             _MemoryAccessor = new TSOS.MemoryAccessor();
         }

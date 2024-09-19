@@ -107,7 +107,7 @@ module TSOS {
             // TODO: Is there anything else we need to do here?
             _CPU = new Cpu();	
             _CPU.init();
-            _Memory	= new Memory();
+            _Memory	= new Memory(_MemorySize);
             _Memory.init();
             _MemoryAccessor	= new MemoryAccessor();
         }
