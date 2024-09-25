@@ -54,21 +54,50 @@ module TSOS {
             //Initialize Displays
             this.initMemoryDisplay();
         }
-        public static initMemoryDisplay(): void {
-            const memoryDisplay = document.getElementById("memoryTable") as HTMLTableElement;
         
-            for (let i = 0; i < _MemorySize; i += 8) {
-                const row = memoryDisplay.insertRow(-1); // Insert at the end of the table
-                const addressCell = row.insertCell(0);
-
-                //Had a different way to do address and asked ChatGPT "Is there a better way to do this"
-                //The response: "Utilized padStart to handle zero-padding of the hexadecimal address, eliminating multiple if statements."
-                const address = `0x${i.toString(16).toUpperCase().padStart(3, '0')}`;
-                addressCell.textContent = address;
-                for (let j = 0; j < 8; j++) {
-                    const cell = row.insertCell(j + 1);
-                    cell.textContent = "00";
+        public static initMemoryDisplay(): void {
+            var memoryDisplay = <HTMLTableElement>document.getElementById("memoryTable");
+            var rowCount = 0;
+        
+            // Loop to create rows for memory addresses and values
+            for (var i = 0; i < 256; i += 8) {
+                // Format the address in hexadecimal
+                var row = memoryDisplay.insertRow(rowCount);
+                var addressHex = i.toString(16).toUpperCase().padStart(3, '0');
+                var formattedAddress = "0x" + addressHex;
+        
+                // Set the first cell as the address in hex
+                var addressCell = row.insertCell(0);
+                addressCell.textContent = formattedAddress;
+        
+                // Initialize the 8 memory values in each row as numbers (starting at 0)
+                for (var j = 0; j < 8; j++) {
+                    var memoryValue = 0;
+                    var cell = row.insertCell(j + 1);
+        
+                    // Assign ID to each memory cell
+                    let memoryCellId = `memory-cell-${i + j}`;
+                    cell.setAttribute('id', memoryCellId);
+                    cell.textContent = memoryValue.toString(16).toUpperCase().padStart(2, '0');
                 }
+                rowCount++;
+            }
+        }
+        
+
+        public static updateMemoryDisplay(address) {
+            console.log("Testing Address " + address);
+            var Address = address.toString(16);
+            if (Address.length == 1) {
+                Address = "0" + (Address.toUpperCase());
+            }
+            else {
+                Address = Address.toUpperCase();
+            }
+            var mem = document.getElementById(Address);
+            if (mem != null) {
+                var addressInsert = _Memory.totalMemory[address];
+                mem.innerText = addressInsert.toString(16).padStart(2, '0').toUpperCase();
             }
         }
         
@@ -115,6 +144,12 @@ module TSOS {
             // .. and call the OS Kernel Bootstrap routine.
             _Kernel = new Kernel();
             _Kernel.krnBootstrap();  // _GLaDOS.afterStartup() will get called in there, if configured.
+
+            _CPU = new Cpu();	
+            _CPU.init();
+            _Memory	= new Memory();
+            _Memory.init();
+            _MemoryAccessor	= new MemoryAccessor();
         }
 
         public static hostBtnHaltOS_click(btn): void {
@@ -125,37 +160,12 @@ module TSOS {
             // Stop the interval that's simulating our clock pulse.
             clearInterval(_hardwareClockID);
             // TODO: Is there anything else we need to do here?
-            _CPU = new Cpu();	
-            _CPU.init();
-            _Memory	= new Memory(_MemorySize);
-            _Memory.init();
-            _MemoryAccessor	= new MemoryAccessor();
+
         }
 
         public static hostBtnReset_click(btn): void {
             // The easiest and most thorough way to do this is to reload (not refresh) the document.
             location.reload();
-        }
-
-        public static updateMemoryDisplay(): void {
-            const memoryDisplay = document.getElementById("memoryTable") as HTMLTableElement;
-            const rows = memoryDisplay.rows;
-            let memoryPointer = 0;
-        
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const addressCell = row.cells[0];
-                //Had a different way to do address and asked ChatGPT "Is there a better way to do this"
-                //The response: "Utilized padStart to handle zero-padding of the hexadecimal address, eliminating multiple if statements."
-                const address = `0x${(i * 8).toString(16).toUpperCase().padStart(3, '0')}`;
-                addressCell.textContent = address;
-        
-                for (let j = 1; j <= 8; j++) {
-                    const cell = row.cells[j];
-                    cell.textContent = _Memory.totalMemory[memoryPointer];
-                    memoryPointer++;
-                }
-            }
         }
     }
 }

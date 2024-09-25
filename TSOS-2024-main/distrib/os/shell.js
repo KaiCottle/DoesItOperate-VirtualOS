@@ -201,22 +201,73 @@ var TSOS;
             _Console.BSOD();
         }
         shellLoad(args) {
-            const programInput = document.getElementById("taProgramInput");
-            const program = programInput.value.trim();
-            const hexDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', ' '];
-            if (!program.length) {
-                _StdOut.putText("Invalid program. Please enter only hex digits and spaces.");
-                return;
+            let memoryTrack = 0;
+            if (_CPU.isExecuting) {
+                _StdOut.putText("Cannot load while CPU is executing.");
             }
-            for (const char of program) {
-                if (!hexDigits.includes(char)) {
-                    _StdOut.putText("Invalid program. Please enter only hex digits and spaces.");
-                    return;
+            else {
+                let text = document.getElementById("taProgramInput").value;
+                // Remove whitespace
+                text = text.replace(/\s/g, '');
+                // Check if length is even
+                let even = false;
+                let evenCheck = text.length;
+                if (evenCheck % 2 === 0) {
+                    even = true;
+                }
+                // Regex to ensure only hex
+                let regexp = /^[A-Fa-f0-9]+$/;
+                let valid = false;
+                if (regexp.test(text) && even) {
+                    _StdOut.putText("Valid input.");
+                    valid = true;
+                    _StdOut.advanceLine();
+                }
+                else {
+                    _StdOut.putText("Invalid input.");
+                    _StdOut.advanceLine();
+                    _StdOut.putText(">");
+                    _StdOut.advanceLine();
+                    valid = false;
+                }
+                if (valid) {
+                    let userInputArray = [];
+                    for (let m = 0; m < text.length; m += 2) {
+                        userInputArray.push(text[m] + text[m + 1]);
+                    }
+                    _PCB = new TSOS.pcb();
+                    _PCB.init();
+                    _MemoryManager = new TSOS.MemoryManager();
+                    _PCB.segment = _MemoryManager.segmentAvailable();
+                    if (_PCB.segment === -1) {
+                        _StdOut.putText("No available memory");
+                        _StdOut.advanceLine();
+                    }
+                    else {
+                        // Count non-terminated PCBs
+                        for (let i = 0; i < _PCBList.length; i++) {
+                            if (_PCBList[i].state !== "Terminated") {
+                                memoryTrack++;
+                            }
+                        }
+                        _PCB.PID = _PID;
+                        _StdOut.putText("PID: " + _PID.toString() + " LOADED");
+                        _StdOut.advanceLine();
+                        _PID++;
+                        _PCB.priority = 5;
+                        _PCB.location = "Memory";
+                        _PCB.state = "Resident";
+                        _PCBList[_PCBList.length] = _PCB;
+                        _PCB.machineCode = userInputArray;
+                        while (_PCB.machineCode.length < 256) {
+                            _PCB.machineCode.push("00");
+                        }
+                        console.log(_PCBList[0].machineCode);
+                        _PCB.setBaseLimit();
+                        _MemoryManager.allocateSegment(_PCB.machineCode);
+                    }
                 }
             }
-            const arrayProgram = program.split(" ");
-            const processID = _MemoryManager.load(arrayProgram, 1);
-            _StdOut.putText(`Process ID: ${processID}`);
         }
         shellRun(args) {
             if (args.length === 0) {

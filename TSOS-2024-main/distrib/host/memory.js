@@ -3,40 +3,25 @@ var TSOS;
     // Represents the memory of the host system
     class Memory {
         totalMemory;
-        constructor(length) {
-            this.totalMemory = new Array(length);
+        memory = [];
+        //Only one needed for project 2
+        seg0base = 0;
+        seg0limit = 255;
+        constructor(totalMemory_ = new Array(768)) {
+            this.totalMemory = totalMemory_;
         }
         // Initializes the memory with 0x00
         init() {
             for (let i = 0; i < 768; i++) {
-                this.totalMemory[i] = 0x00;
+                this.totalMemory[i] = 0;
             }
         }
-        // Retrieves a byte from the specified address
-        getByte(address) {
-            return this.totalMemory[address];
-        }
-        // Sets a byte at the specified address with the provided data
-        setByte(address, data) {
-            if (data.length == 1) {
-                data = 0 + data;
+        hexLog(theNumber, theLength) {
+            var pad = theNumber.toString(16).toUpperCase();
+            while (pad.length < theLength) {
+                pad = 0 + pad;
             }
-            this.totalMemory[address] = data;
-        }
-        // Returns the size of the memory
-        getSize() {
-            return this.totalMemory.length;
-        }
-        clearMemory() {
-            for (var i = 0; i < this.totalMemory.length; i++) {
-                this.totalMemory[i] = 0x00;
-            }
-        }
-        // Clears from base to limit
-        clearRange(base, limit) {
-            for (var i = 0; i < (limit - base); i++) {
-                this.totalMemory[i + base] = 0x00;
-            }
+            return pad;
         }
     }
     TSOS.Memory = Memory;

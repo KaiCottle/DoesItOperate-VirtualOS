@@ -1,61 +1,98 @@
+
 module TSOS {
-    const MEMORY_SIZE = 256; // Size of a memory block
-    const numPrograms = 3;   // Maximum number of programs
 
     export class MemoryManager {
-
-        public residentList: TSOS.pcb[] = [];
-        public readyQueue: TSOS.Queue = new Queue();
-        private allocated: number[] = new Array(numPrograms).fill(-1);
-
+        public memSegment0: any;
+        public memSegment1: any;
+        public memSegment2: any;
         constructor() {
-            this.residentList = [];
-            this.readyQueue = new Queue();
-            this.allocated = new Array(numPrograms);
-            for (var i = 0; i < this.allocated.length; i++) {
-                this.allocated[i] = -1;
-            }
         }
 
-        public load(program: Array<string>, priority: number): number {
-            var pcb = new pcb(priority);
-            pcb.processState = "Resident";
-            pcb.loadCycle = _OSclock;
-            this.residentList[pcb.processID] = pcb;
 
-            if (this.allocateMemory(pcb, program)) {
-                return pcb.processID;
-            } else {
-                throw new Error("Memory allocation failed: no available space.");
+        public clearSegment(base: number, limit: number) {
+            for (let i = base; i < limit; i++) {
+                _Memory.totalMemory[i] = 0x00;
             }
-        }
-
-        private allocateMemory(pcb: TSOS.pcb, program: Array<string>): boolean {
-            const freeIndex = this.findFreeMemoryBlock();
-            if (freeIndex === -1) {
-                return false; // No available memory block
+            for (let m = base; m < limit; m++) {
+                TSOS.Control.updateMemoryDisplay(m);
             }
+            //_MemoryAccessor.tableUpdate();
+        } 
 
-            this.allocated[freeIndex] = pcb.processID;
-            pcb.baseRegister = freeIndex * MEMORY_SIZE;
-            pcb.limitRegister = pcb.baseRegister + MEMORY_SIZE - 1;
-            pcb.isInMemory = true;
 
-            this.loadProgramIntoMemory(pcb, program);
-            TSOS.Control.updateMemoryDisplay();
-            return true;
-        }
-
-        //Seperated this logic from the allocateMemory function to make it easier to test
-        private findFreeMemoryBlock(): number {
-            return this.allocated.findIndex(slot => slot === -1);
-        }
-
-        private loadProgramIntoMemory(pcb: TSOS.pcb, program: Array<string>): void {
-            for (let i = 0; i < MEMORY_SIZE; i++) {
-                const code = program[i] || "00";
-                _Memory.setByte(pcb.baseRegister + i, code);
+        public allocateSegment(inputArray: string[]) {
+            // Segment 0
+            if (_PCB.segment === 0) {
+                this.clearSegment(_PCB.base, _PCB.limit);
+                var w = 0;
+                for (let m = _PCB.base; m < _PCB.limit && w < inputArray.length; m++) {
+                    let data = parseInt(inputArray[w] ?? "00", 16);
+                    console.log(`Writing to memory address: ${m}, Data: ${data}`);
+                    _MemoryAccessor.write(m, data);
+        
+                    // Update the memory display cell corresponding to this memory address
+                    let memoryCell = document.getElementById(`memory-cell-${m}`);
+                    if (memoryCell) {
+                        memoryCell.textContent = data.toString(16).toUpperCase().padStart(2, '0');
+                    }
+        
+                    w++;
+                }
+                this.memSegment0 = true;
             }
+        
+            // Segment 1
+            if (_PCB.segment === 1) {
+                this.clearSegment(_PCB.base, _PCB.limit);
+                var w = 0;
+                for (let m = _PCB.base; m < _PCB.limit && w < inputArray.length; m++) {
+                    let data = parseInt(inputArray[w] ?? "00", 16);
+                    console.log(`Writing to memory address: ${m}, Data: ${data}`);
+                    _MemoryAccessor.write(m, data);
+        
+                    // Update the memory display cell corresponding to this memory address
+                    let memoryCell = document.getElementById(`memory-cell-${m}`);
+                    if (memoryCell) {
+                        memoryCell.textContent = data.toString(16).toUpperCase().padStart(2, '0');
+                    }
+        
+                    w++;
+                }
+                this.memSegment0 = true;
+            }
+        
+            // Segment 2
+            if (_PCB.segment === 3) {
+                this.clearSegment(_PCB.base, _PCB.limit);
+                var w = 0;
+                for (let m = _PCB.base; m < _PCB.limit && w < inputArray.length; m++) {
+                    let data = parseInt(inputArray[w] ?? "00", 16);
+                    console.log(`Writing to memory address: ${m}, Data: ${data}`);
+                    _MemoryAccessor.write(m, data);
+        
+                    // Update the memory display cell corresponding to this memory address
+                    let memoryCell = document.getElementById(`memory-cell-${m}`);
+                    if (memoryCell) {
+                        memoryCell.textContent = data.toString(16).toUpperCase().padStart(2, '0');
+                    }
+        
+                    w++;
+                }
+                this.memSegment0 = true;
+            }
+        
+            // Debugging output
+            console.log(`CUR BASE: ${_PCB.base}, CUR LIMIT: ${_PCB.limit}, SEGMENT: ${_PCB.segment}`);
+            console.log("Segment allocator memory: ", _Memory.totalMemory);
+        }
+        
+
+        public segmentAvailable(): any {
+            let segmentNumber = -1;
+            if (_PCBList.length < 3) {
+                segmentNumber = _PCBList.length;
+            }
+            return segmentNumber;
         }
     }
 }
