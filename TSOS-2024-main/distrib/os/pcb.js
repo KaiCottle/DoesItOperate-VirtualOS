@@ -70,6 +70,4 @@ var TSOS;
     }
     TSOS.pcb = pcb;
 })(TSOS || (TSOS = {}));
-// note to self: turnaround time- interval from process submission to process completion 
-// wait time- amount of time spent in the ready queue
 //# sourceMappingURL=pcb.js.map

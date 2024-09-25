@@ -49,11 +49,6 @@ module TSOS {
                 this.machineCode[i] = "00";
             }           
         }
-
     }
 }
-
-// note to self: turnaround time- interval from process submission to process completion 
-// wait time- amount of time spent in the ready queue
-
 

@@ -205,8 +205,8 @@ var TSOS;
         }
         shellLoad(args) {
             if (_CPU.isExecuting) {
-                _StdOut.putText("Cannot load while CPU is executing.");
-                return;
+                _CPU.isExecuting = false;
+                _StdOut.putText("Try again now that the CPU is free.");
             }
             const textInput = document.getElementById("taProgramInput").value.trim().replace(/\s/g, '');
             // Validate input: check if it's hex and has an even length

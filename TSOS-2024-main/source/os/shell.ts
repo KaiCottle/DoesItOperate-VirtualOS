@@ -263,10 +263,6 @@ module TSOS {
         }
 
         public shellLoad(args: string[]): void {
-            if (_CPU.isExecuting) {
-                _StdOut.putText("Cannot load while CPU is executing.");
-                return;
-            }
         
             const textInput = (<HTMLInputElement>document.getElementById("taProgramInput")).value.trim().replace(/\s/g, '');
         

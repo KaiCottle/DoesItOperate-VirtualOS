@@ -129,12 +129,12 @@ module TSOS {
                 return `
                     <tr>
                         <td>${pcb.PID.toString(16)}</td>
-                        <td>${pcb.PC.toString(16)}</td>
-                        <td>${pcb.IR.toString(16)}</td>
-                        <td>${pcb.Acc.toString(16)}</td>
-                        <td>${pcb.Xreg.toString(16)}</td>
-                        <td>${pcb.Yreg.toString(16)}</td>
-                        <td>${pcb.Zflag.toString(16)}</td>
+                        <td>${_CPU.PC.toString(16)}</td>
+                        <td>${_CPU.Ir.toString()}</td>
+                        <td>${_CPU.Acc.toString(16)}</td>
+                        <td>${_CPU.Xreg.toString(16)}</td>
+                        <td>${_CPU.Yreg.toString(16)}</td>
+                        <td>${_CPU.Zflag.toString(16)}</td>
                         <td>${pcb.priority.toString(16)}</td>
                         <td>${pcb.state}</td>
                         <td>${pcb.location.toString(16)}</td>
