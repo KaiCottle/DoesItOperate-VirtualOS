@@ -16,7 +16,7 @@ module TSOS {
             for (let m = base; m < limit; m++) {
                 TSOS.Control.updateMemoryDisplay(m);
             }
-            //_MemoryAccessor.tableUpdate();
+            _MemoryAccessor.tableUpdate();
         } 
 
 

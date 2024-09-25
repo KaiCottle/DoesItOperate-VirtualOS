@@ -50,20 +50,29 @@ module TSOS {
                 "status",
                 "<string> - Sets the status.");
             this.commandList[this.commandList.length] = sc;
+
             // help
             sc = new ShellCommand(this.shellHelp,
                                   "help",
                                   "- This is the help command. Seek help.");
             this.commandList[this.commandList.length] = sc;
+            
             // bsod
             sc = new ShellCommand(this.shellBsod,
                 "bsod",
                 "Displays the Blue Screen of Death.");
             this.commandList[this.commandList.length] = sc;
+
             // load
             sc = new ShellCommand(this.shellLoad,
                 "load",
                 "<load>- Validates previous input, only hex digits and spaces are valid.");
+            this.commandList[this.commandList.length] = sc;
+
+            // run
+            sc = new ShellCommand(this.shellRun,
+                "run",
+                "run <pid>, runs the specified program.");
             this.commandList[this.commandList.length] = sc;
 
             // shutdown
@@ -253,94 +262,86 @@ module TSOS {
             _Console.BSOD();
         }
 
-        public shellLoad(args: string[]) {
-            let memoryTrack = 0;
-        
+        public shellLoad(args: string[]): void {
             if (_CPU.isExecuting) {
                 _StdOut.putText("Cannot load while CPU is executing.");
-            } else {
-                let text = (<HTMLInputElement>document.getElementById("taProgramInput")).value;
-        
-                // Remove whitespace
-                text = text.replace(/\s/g, '');
-                // Check if length is even
-                let even = false;
-                let evenCheck = text.length;
-                if (evenCheck % 2 === 0) {
-                    even = true;
-                }
-                // Regex to ensure only hex
-                let regexp = /^[A-Fa-f0-9]+$/;
-                let valid = false;
-                if (regexp.test(text) && even) {
-                    _StdOut.putText("Valid input.");
-                    valid = true;
-                    _StdOut.advanceLine();
-                } else {
-                    _StdOut.putText("Invalid input.");
-                    _StdOut.advanceLine();
-                    _StdOut.putText(">");
-                    _StdOut.advanceLine();
-                    valid = false;
-                }
-                if (valid) {
-                    let userInputArray: string[] = [];
-                    for (let m = 0; m < text.length; m += 2) {
-                        userInputArray.push(text[m] + text[m + 1]);
-                    }
-                    _PCB = new pcb();
-                    _PCB.init();
-                    _MemoryManager = new MemoryManager();
-                    _PCB.segment = _MemoryManager.segmentAvailable();
-                    if (_PCB.segment === -1) {
-                        _StdOut.putText("No available memory");
-                        _StdOut.advanceLine();
-                    } else {
-                        // Count non-terminated PCBs
-                        for (let i = 0; i < _PCBList.length; i++) {
-                            if (_PCBList[i].state !== "Terminated") {
-                                memoryTrack++;
-                            }
-                        }
-                        _PCB.PID = _PID;
-                        _StdOut.putText("PID: " + _PID.toString() + " LOADED");
-                        _StdOut.advanceLine();
-                        _PID++;
-                        _PCB.priority = 5;
-                        _PCB.location = "Memory";
-                        _PCB.state = "Resident";
-                        _PCBList[_PCBList.length] = _PCB;
-                        _PCB.machineCode = userInputArray;
-                        while (_PCB.machineCode.length < 256) {
-                            _PCB.machineCode.push("00");
-                        }
-                        console.log(_PCBList[0].machineCode);
-                        _PCB.setBaseLimit();
-                        _MemoryManager.allocateSegment(_PCB.machineCode);
-                    }
-                }
+                return;
             }
+        
+            const textInput = (<HTMLInputElement>document.getElementById("taProgramInput")).value.trim().replace(/\s/g, '');
+        
+            // Validate input: check if it's hex and has an even length
+            const isValidHex = /^[A-Fa-f0-9]+$/.test(textInput) && (textInput.length % 2 === 0);
+        
+            if (!isValidHex) {
+                _StdOut.putText("Invalid input. Ensure it's a valid hex string with an even number of characters.");
+                _StdOut.advanceLine();
+                _StdOut.putText(">");
+                return;
+            }
+        
+            // Convert hex string into an array of two-character byte pairs
+            const userInputArray: string[] = textInput.match(/.{1,2}/g) || [];
+        
+            // Initialize the PCB and MemoryManager if valid input is provided
+            _PCB = new pcb();
+            _PCB.init();
+            _MemoryManager = new MemoryManager();
+            _PCB.segment = _MemoryManager.segmentAvailable();
+        
+            if (_PCB.segment === -1) {
+                _StdOut.putText("No available memory.");
+                _StdOut.advanceLine();
+                return;
+            }
+        
+            // Count non-terminated PCBs
+            const activePCBs = _PCBList.filter(pcb => pcb.state !== "Terminated").length;
+        
+            // Set PCB properties and allocate memory
+            _PCB.PID = _PID++;
+            _PCB.priority = 5;
+            _PCB.location = "Memory";
+            _PCB.state = "Resident";
+        
+            // Pad the machineCode array to 256 elements using "00" if necessary
+            _PCB.machineCode = userInputArray.concat(new Array(256 - userInputArray.length).fill("00"));
+        
+            _PCBList.push(_PCB); // Add the PCB to the list
+            _MemoryManager.allocateSegment(_PCB.machineCode);
+        
+            // Output success message and update the process table
+            _StdOut.putText(`PID: ${_PCB.PID} LOADED`);
+            _StdOut.advanceLine();
+            Control.processTableUpdate();
         }
+        
         
         public shellRun(args: string[]): void {
-            if (args.length === 0) {
-                _StdOut.putText("Usage: run <pid>. Please supply a PID.");
-                return;
-            }
-        
-            const pid = parseInt(args[0]);
-            
-            if (isNaN(pid)) {
-                _StdOut.putText("Invalid PID. Please enter a valid PID.");
-                return;
-            }
-        
-            if (_MemoryManager.doesProcessExist(pid)) {
-                _CPU.runProcess(pid);
-            } else {
-                _StdOut.putText("Process does not exist.");
-            }
-        }
+    const pid = Number(args[0]);
+
+    // Validate PID input
+    if (isNaN(pid) || pid < 0 || pid >= _PCBList.length) {
+        _StdOut.putText("ERROR - INVALID PID");
+        return;
+    }
+
+    const pcb = _PCBList[pid];
+
+    // Ensure the PCB is valid and in the "Resident" state
+    if (pcb && pcb.PID === pid && pcb.state === "Resident") {
+        pcb.state = "Ready";
+        _ReadyQueue.enqueue(pcb);
+        _CPU.isExecuting = true;
+        console.log("RUN READY QUEUE: ", _ReadyQueue);
+    } else {
+        _StdOut.putText("ERROR - INVALID PID or PCB not in Resident state");
+    }
+
+    // Update the memory table after state change
+    _MemoryAccessor.tableUpdate();
+}
+
         
         
         public shellStatus(args: string[]) {

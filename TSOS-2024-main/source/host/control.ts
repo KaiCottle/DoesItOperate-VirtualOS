@@ -19,153 +19,172 @@
 // Control Services
 //
 module TSOS {
-
     export class Control {
-
         public static hostInit(): void {
             // This is called from index.html's onLoad event via the onDocumentLoad function pointer.
 
-            // Get a global reference to the canvas.  TODO: Should we move this stuff into a Display Device Driver?
+            // Get a global reference to the canvas.
             _Canvas = <HTMLCanvasElement>document.getElementById('display');
-
-            // Get a global reference to the drawing context.
             _DrawingContext = _Canvas.getContext("2d");
 
-            // Enable the added-in canvas text functions (see canvastext.ts for provenance and details).
-            CanvasTextFunctions.enable(_DrawingContext);   // Text functionality is now built in to the HTML5 canvas. But this is old-school, and fun, so we'll keep it.
+            // Enable the added-in canvas text functions.
+            CanvasTextFunctions.enable(_DrawingContext);
 
-            // Clear the log text box.
-            // Use the TypeScript cast to HTMLInputElement
-            (<HTMLInputElement> document.getElementById("taHostLog")).value="";
+            // Clear the log text box and set focus on the start button.
+            (<HTMLInputElement>document.getElementById("taHostLog")).value = "";
+            (<HTMLInputElement>document.getElementById("btnStartOS")).focus();
 
-            // Set focus on the start button.
-            // Use the TypeScript cast to HTMLInputElement
-            (<HTMLInputElement> document.getElementById("btnStartOS")).focus();
-
-            // Check for our testing and enrichment core, which
-            // may be referenced here (from index.html) as function Glados().
+            // Check for Glados initialization.
             if (typeof Glados === "function") {
-                // function Glados() is here, so instantiate Her into
-                // the global (and properly capitalized) _GLaDOS variable.
                 _GLaDOS = new Glados();
                 _GLaDOS.init();
             }
 
-            //Initialize Displays
+            // Initialize memory display.
             this.initMemoryDisplay();
         }
-        
+
         public static initMemoryDisplay(): void {
-            var memoryDisplay = <HTMLTableElement>document.getElementById("memoryTable");
-            var rowCount = 0;
-        
-            // Loop to create rows for memory addresses and values
-            for (var i = 0; i < 256; i += 8) {
-                // Format the address in hexadecimal
-                var row = memoryDisplay.insertRow(rowCount);
-                var addressHex = i.toString(16).toUpperCase().padStart(3, '0');
-                var formattedAddress = "0x" + addressHex;
-        
-                // Set the first cell as the address in hex
-                var addressCell = row.insertCell(0);
-                addressCell.textContent = formattedAddress;
-        
-                // Initialize the 8 memory values in each row as numbers (starting at 0)
-                for (var j = 0; j < 8; j++) {
-                    var memoryValue = 0;
-                    var cell = row.insertCell(j + 1);
-        
-                    // Assign ID to each memory cell
-                    let memoryCellId = `memory-cell-${i + j}`;
+            const memoryDisplay = <HTMLTableElement>document.getElementById("memoryTable");
+
+            // Create rows for memory addresses and values.
+            for (let i = 0; i < 256; i += 8) {
+                const row = memoryDisplay.insertRow();
+                const formattedAddress = `0x${i.toString(16).toUpperCase().padStart(3, '0')}`;
+
+                // Set the first cell as the address in hex.
+                row.insertCell(0).textContent = formattedAddress;
+
+                // Initialize 8 memory values in each row.
+                for (let j = 0; j < 8; j++) {
+                    const cell = row.insertCell(j + 1);
+                    const memoryCellId = `memory-cell-${i + j}`;
                     cell.setAttribute('id', memoryCellId);
-                    cell.textContent = memoryValue.toString(16).toUpperCase().padStart(2, '0');
+                    cell.textContent = "00";
                 }
-                rowCount++;
             }
         }
-        
 
-        public static updateMemoryDisplay(address) {
-            console.log("Testing Address " + address);
-            var Address = address.toString(16);
-            if (Address.length == 1) {
-                Address = "0" + (Address.toUpperCase());
+        public static updateMemoryDisplay(address: number): void {
+            const formattedAddress = address.toString(16).toUpperCase().padStart(2, '0');
+            const memoryCell = document.getElementById(formattedAddress);
+
+            if (memoryCell) {
+                const memoryValue = _Memory.totalMemory[address].toString(16).padStart(2, '0').toUpperCase();
+                memoryCell.textContent = memoryValue;
             }
-            else {
-                Address = Address.toUpperCase();
-            }
-            var mem = document.getElementById(Address);
-            if (mem != null) {
+            if (memoryCell != null) {
                 var addressInsert = _Memory.totalMemory[address];
-                mem.innerText = addressInsert.toString(16).padStart(2, '0').toUpperCase();
+                memoryCell.innerText = addressInsert.toString(16).padStart(2, '0').toUpperCase();
             }
         }
-        
-
 
         public static hostLog(msg: string, source: string = "?"): void {
-            // Note the OS CLOCK.
-            var clock: number = _OSclock;
+            const clock = _OSclock;
+            const now = new Date().getTime();
 
-            // Note the REAL clock in milliseconds since January 1, 1970.
-            var now: number = new Date().getTime();
+            const logMessage = `({ clock: ${clock}, source: ${source}, msg: ${msg}, now: ${now} })\n`;
 
-            // Build the log string.
-            var str: string = "({ clock:" + clock + ", source:" + source + ", msg:" + msg + ", now:" + now  + " })"  + "\n";
-
-            // Update the log console.
-            var taLog = <HTMLInputElement> document.getElementById("taHostLog");
-            taLog.value = str + taLog.value;
-
-            // TODO in the future: Optionally update a log database or some streaming service.
+            const taLog = <HTMLInputElement>document.getElementById("taHostLog");
+            taLog.value = logMessage + taLog.value;
         }
 
-
-        //
-        // Host Events
-        //
-        public static hostBtnStartOS_click(btn): void {
-            // Disable the (passed-in) start button...
+        public static hostBtnStartOS_click(btn: HTMLButtonElement): void {
+            // Disable start button and enable other buttons.
             btn.disabled = true;
-
-            // .. enable the Halt and Reset buttons ...
             (<HTMLButtonElement>document.getElementById("btnHaltOS")).disabled = false;
             (<HTMLButtonElement>document.getElementById("btnReset")).disabled = false;
 
-            // .. set focus on the OS console display ...
-            document.getElementById("display").focus();
+            // Set focus on the display.
+            document.getElementById("display")?.focus();
 
-            // ... Create and initialize the CPU (because it's part of the hardware)  ...
-            _CPU = new Cpu();  // Note: We could simulate multi-core systems by instantiating more than one instance of the CPU here.
-            _CPU.init();       //       There's more to do, like dealing with scheduling and such, but this would be a start. Pretty cool.
-
-            // ... then set the host clock pulse ...
-            _hardwareClockID = setInterval(Devices.hostClockPulse, CPU_CLOCK_INTERVAL);
-            // .. and call the OS Kernel Bootstrap routine.
-            _Kernel = new Kernel();
-            _Kernel.krnBootstrap();  // _GLaDOS.afterStartup() will get called in there, if configured.
-
-            _CPU = new Cpu();	
+            // Initialize CPU and memory.
+            _CPU = new Cpu();
             _CPU.init();
-            _Memory	= new Memory();
+            _Memory = new Memory();
             _Memory.init();
-            _MemoryAccessor	= new MemoryAccessor();
+            _MemoryAccessor = new MemoryAccessor();
+
+            // Set the host clock pulse and start the kernel.
+            _hardwareClockID = setInterval(Devices.hostClockPulse, CPU_CLOCK_INTERVAL);
+            _Kernel = new Kernel();
+            _Kernel.krnBootstrap();
         }
 
-        public static hostBtnHaltOS_click(btn): void {
+        public static hostBtnHaltOS_click(): void {
             Control.hostLog("Emergency halt", "host");
             Control.hostLog("Attempting Kernel shutdown.", "host");
-            // Call the OS shutdown routine.
-            _Kernel.krnShutdown();
-            // Stop the interval that's simulating our clock pulse.
-            clearInterval(_hardwareClockID);
-            // TODO: Is there anything else we need to do here?
 
+            // Shutdown OS and stop the hardware clock.
+            _Kernel.krnShutdown();
+            clearInterval(_hardwareClockID);
         }
 
-        public static hostBtnReset_click(btn): void {
-            // The easiest and most thorough way to do this is to reload (not refresh) the document.
+        //Update the process table
+        public static processTableUpdate(): void {
+            const processTable = document.getElementById("processTable");
+            if (!processTable) return;
+        
+            const newRows = _PCBList.map(pcb => {
+                return `
+                    <tr>
+                        <td>${pcb.PID.toString(16)}</td>
+                        <td>${pcb.PC.toString(16)}</td>
+                        <td>${pcb.IR.toString(16)}</td>
+                        <td>${pcb.Acc.toString(16)}</td>
+                        <td>${pcb.Xreg.toString(16)}</td>
+                        <td>${pcb.Yreg.toString(16)}</td>
+                        <td>${pcb.Zflag.toString(16)}</td>
+                        <td>${pcb.priority.toString(16)}</td>
+                        <td>${pcb.state}</td>
+                        <td>${pcb.location.toString(16)}</td>
+                    </tr>
+                `;
+            }).join('');  // Join all rows into a single string
+        
+            processTable.innerHTML = newRows;
+        }
+        
+
+        //Update the CPU table
+        public static cpuTableUpdate(): void {
+            if (!_CPU.isExecuting) return;
+
+            const cpuTable = document.getElementById("cpuTable") as HTMLTableElement;
+
+            if (!cpuTable) {
+                console.error("CPU table element not found.");
+                return;
+            }
+        
+            // Clear the CPU table's current content
+            cpuTable.innerHTML = '';
+        
+            // Get the current values of the CPU registers
+            const registerValues = [
+                _CPU.PC.toString(16), 
+                _CPU.Ir.toString(),
+                _CPU.Acc.toString(16),
+                _CPU.Xreg.toString(16), 
+                _CPU.Yreg.toString(16),
+                _CPU.Zflag.toString(16)
+            ];
+        
+            // Create a new table row
+            const row = document.createElement('tr');
+        
+            // For each register value, create a new table cell, set its text content to the register value, and append it to the row
+            registerValues.forEach((value) => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            cpuTable.appendChild(row);
+        }
+
+        public static hostBtnReset_click(): void {
             location.reload();
         }
     }
 }
+

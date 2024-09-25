@@ -10,7 +10,7 @@ var TSOS;
         constructor(totalMemory_ = new Array(768)) {
             this.totalMemory = totalMemory_;
         }
-        // Initializes the memory with 0x00
+        // Initializes the memory
         init() {
             for (let i = 0; i < 768; i++) {
                 this.totalMemory[i] = 0;

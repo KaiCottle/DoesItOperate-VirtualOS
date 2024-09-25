@@ -11,62 +11,226 @@
      Operating System Concepts 8th edition by Silberschatz, Galvin, and Gagne.  ISBN 978-0-470-12872-5
      ------------ */
 
-module TSOS {
+     module TSOS {
+        export class Cpu {
+            constructor(
+                public PC: number = 0,
+                public Acc: number = 0,
+                public Ir: string = "",
+                public Xreg: number = 0,
+                public Yreg: number = 0,
+                public Zflag: number = 0,
+                public isExecuting: boolean = false
+            ) {}
+    
+            public init(): void {
+                this.PC = 0;
+                this.Acc = 0;
+                this.Ir = "";
+                this.Xreg = 0;
+                this.Yreg = 0;
+                this.Zflag = 0;
+                this.isExecuting = false;
+            }
+    
+            public cycle(): void {
+                _Kernel.krnTrace("CPU cycle");
+    
+                if (this.isExecuting) {
+                    this.fetch();
+                    _MemoryAccessor.tableUpdate();
+                    _Cycle++;
+                    _PCB.waitRun++;
+                }
+            }
+    
+            public fetch(): void {
+                if (_PCB.state !== "Terminated") {
+                    this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
+                    this.decode();
+                }
+                _MemoryAccessor.tableUpdate();
+            }
+    
+            public decode(): void {
+                _PCB.state = "Running";
+    
+                switch (this.Ir) {
+                    case "A9": this.ldaA9(); break;
+                    case "AD": this.ldaAd(); break;
+                    case "8D": this.sta8d(); break;
+                    case "6D": this.adc6d(); break;
+                    case "A2": this.ldxA2(); break;
+                    case "AE": this.ldxAe(); break;
+                    case "A0": this.ldyA0(); break;
+                    case "AC": this.ldyAc(); break;
+                    case "EA": this.nopEa(); break;
+                    case "00": this.brk00(); break;
+                    case "EC": this.cpxEc(); break;
+                    case "D0": this.bneD0(); break;
+                    case "EE": this.incEe(); break;
+                    case "FF": this.sysFf(); break;
+                    default:
+                        _Kernel.krnTrace("Invalid instruction, terminating execution.");
+                        _PCB.state = "Terminated";
+                        _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
+                        break;
+                }
+            }
+    
+            // CPU Operations
+            // Load Accumulator with a constant
+            public ldaA9(): void {
+                this.PC++;
+                this.Acc = _MemoryAccessor.read(this.PC);
+                this.PC++;
+            }
 
-    export class Cpu {
+            // Load Accumulator from memory
+            public ldaAd(): void {
+                this.PC++;
+                this.Acc = _MemoryAccessor.read(this.littleEndian());
+                this.PC += 2;
+            }
 
-        constructor(public PC: number = 0,
-            public Acc: number = 0,
-            public Ir: string = "",
-            public Xreg: number = 0,
-            public Yreg: number = 0,
-            public Zflag: number = 0,
-            public isExecuting: boolean = false,
-            public currentPCB: TSOS.pcb = null)
-             {
-
-        }
-
-        public init(): void {
-            this.PC = 0;
-            this.Acc = 0;
-            this.Ir = "";
-            this.Xreg = 0;
-            this.Yreg = 0;
-            this.Zflag = 0;
-            this.isExecuting = false;
-
-        }
-
-        public cycle(): void {
-            _Kernel.krnTrace('CPU cycle');
-            // TODO: Accumulate CPU usage and profiling statistics here.
-            // Do the real work here. Be sure to set this.isExecuting appropriately.
-        }
-
-        public loadNewProcess(pcb: TSOS.pcb): void {
-            if (pcb.processState !== "Terminated") {
-                this.currentPCB = pcb;
-                this.PC = this.currentPCB.programCounter;
-                this.Acc = this.currentPCB.acc;
-                this.Xreg = this.currentPCB.XRegister;
-                this.Yreg = this.currentPCB.YRegister;
-                this.Zflag = this.currentPCB.ZFlag;
-                this.runNewProcess();
+            // Store Accumulator in memory
+            public sta8d(): void {
+                this.PC++;
+                _MemoryAccessor.write(this.littleEndian(), this.Acc);
+                this.PC += 2;
+            }
+            
+            // Add with carry
+            public adc6d(): void {
+                this.PC++;
+                this.Acc += _MemoryAccessor.read(this.littleEndian());
+                this.PC += 2;
+            }
+            
+            // Load X register with a constant
+            public ldxA2(): void {
+                this.PC++;
+                this.Xreg = _MemoryAccessor.read(this.PC);
+                this.PC++;
+            }
+            
+            // Load X register from memory
+            public ldxAe(): void {
+                this.PC++;
+                this.Xreg = _MemoryAccessor.read(this.littleEndian());
+                this.PC += 2;
+            }
+            
+            // Load Y register with a constant
+            public ldyA0(): void {
+                this.PC++;
+                this.Yreg = _MemoryAccessor.read(this.PC);
+                this.PC++;
+            }
+            
+            // Load Y register from memory
+            public ldyAc(): void {
+                this.PC++;
+                this.Yreg = _MemoryAccessor.read(this.littleEndian());
+                this.PC += 2;
+            }
+    
+            // No operation
+            public nopEa(): void {
+                this.PC++;
+            }
+            
+            //Break
+            public brk00(): void {
+                _PCB.cycleEnd = _Cycle;
+                _PCB.state = "Terminated";
+                _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
+    
+                let turnaround = _PCB.cycleEnd - _PCB.cycleStart;
+                let waitTime = turnaround - _PCB.waitRun;
+                _PCB.turnAround = turnaround;
+                _PCB.waitTime = waitTime;
+    
+                if (_ReadyQueue.getSize() < 1) {
+                    _StdOut.advanceLine();
+                    _PCBList.forEach((pcb) => {
+                        if (pcb.state === "Terminated") {
+                            _StdOut.putText(`PID: ${pcb.PID}`);
+                            _StdOut.advanceLine();
+                            _StdOut.putText(`Turnaround Time: ${pcb.turnAround}`);
+                            _StdOut.advanceLine();
+                            _StdOut.putText(`Wait Time: ${pcb.waitTime}`);
+                            _StdOut.advanceLine();
+                        }
+                    });
+                    _StdOut.advanceLine();
+                    _StdOut.putText(">");
+                    this.isExecuting = false;
+                    _CPU.init();
+                }
+            }
+            
+            // Compare memory to X register, set Z flag if equal
+            public cpxEc(): void {
+                this.PC++;
+                let compare = _MemoryAccessor.read(this.littleEndian());
+                this.Zflag = this.Xreg === compare ? 1 : 0;
+                this.PC += 2;
+            }
+            
+            // Branch if Z flag is 0
+            public bneD0(): void {
+                this.PC++;
+                if (this.Zflag === 0) {
+                    this.PC += _MemoryAccessor.read(this.PC) + 1;
+                    if (this.PC > 255) this.PC -= 256;
+                } else {
+                    this.PC++;
+                }
+            }
+            
+            // Increment value in memory
+            public incEe(): void {
+                this.PC++;
+                let address = this.littleEndian();
+                let value = _MemoryAccessor.read(address);
+                _MemoryAccessor.write(address, value + 1);
+                this.PC += 2;
+            }
+            
+            // System call (print integer or string based on X register)
+            public sysFf(): void {
+                this.PC++;
+                if (this.Xreg === 1) {
+                    _StdOut.putText(this.Yreg.toString(16));
+                } else if (this.Xreg === 2) {
+                    let address = this.Yreg;
+                    while (_MemoryAccessor.read(address) !== 0x0) {
+                        _StdOut.putText(String.fromCharCode(_MemoryAccessor.read(address)));
+                        address++;
+                    }
+                }
+            }
+    
+            // Helper Methods
+            public littleEndian(): number {
+                let address = _MemoryAccessor.read(this.PC);
+                address += 0x100 * _MemoryAccessor.read(this.PC + 1);
+                return address;
+            }
+    
+            public savePCB(): void {
+                _PCB.PC = this.PC;
+                _PCB.Acc = this.Acc;
+                _PCB.IR = this.Ir;
+                _PCB.Xreg = this.Xreg;
+                _PCB.Yreg = this.Yreg;
+                _PCB.Zflag = this.Zflag;
+            }
+    
+            public killProg(pid: number): void {
+                this.isExecuting = false;
             }
         }
-
-        public runNewProcess() {
-            this.currentPCB.processState = "Executing";
-            this.isExecuting = true;
-        }
-
-        public runProcess(pid: number): void {
-            // first load the process info into the CPU's registers
-            this.currentPCB = _MemoryManager.residentList[pid];
-            // then run it
-            this.currentPCB.processState = "Executing";
-            this.isExecuting = true;
-        }
     }
-}
+    

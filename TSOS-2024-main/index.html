@@ -79,7 +79,7 @@
       </canvas>
    </div>
 
-   <div id="divLog" style="margin-left:550px; padding: 10px; border: 2px solid #C0C0C0; background-color: #E0E0E0; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); border-radius: 4px; width: fit-content;">
+   <div id="divLog" style="margin-left: 520px;height: 482px;padding: 10px;border: 2px solid #C0C0C0;background-color: #E0E0E0;box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);border-radius: 4px;width: fit-content;position: relative;top: 4px;">
       <label>
          Host Log
          <br>
@@ -87,12 +87,12 @@
                    id  ="taHostLog"
                    rows="26"
                    cols="48"
-                   style="border: 1px solid #A0A0A0; background-color: #F0F0F0; padding: 5px; font-family: Tahoma, sans-serif;"
+                   style="border: 1px solid #A0A0A0;background-color: #F0F0F0;padding: 5px;font-family: Tahoma, sans-serif;height: 460px;"
          ></textarea>
       </label>
    </div>
    <div><br></div>
-   <div id="divUserProgramInput" style="margin-left:550px; padding: 10px; border: 2px solid #C0C0C0; background-color: #E0E0E0; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); border-radius: 4px; width: fit-content;">
+   <div id="divUserProgramInput" style="margin-left: 300px;padding: 10px;border: 2px solid #C0C0C0;background-color: #E0E0E0;box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);border-radius: 4px;width: fit-content;position: relative;top: -4px;">
       <label>
          User Program Input
          <br>
@@ -105,7 +105,7 @@
       </label>
    </div>
    <div><br></div>
-   <div id="divMemoryDisplay" style="margin:4px; padding: 10px; width: 250px; height:530px; position: relative; top: -175px; float:left; border: 2px solid #C0C0C0; background-color: #E0E0E0; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); border-radius: 4px;">
+   <div id="divMemoryDisplay" style="margin:4px;padding: 10px;width: 250px;height:530px;position: relative;top: -210px;float:left;border: 2px solid #C0C0C0;background-color: #E0E0E0;box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);border-radius: 4px;">
       <label>
          Memory Table
          <br>
@@ -116,18 +116,50 @@
             </div>
       </label>
    </div>
-   <div id="divPcbTable" style="margin-left:550px; padding: 10px; border: 2px solid #C0C0C0; background-color: #E0E0E0; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); border-radius: 4px; width: fit-content;">
-      <label>
-         PCB Table
-         <br>
-         <textarea name="taPcbDisplay"
-                   id  ="taPcbDisplay"
-                   rows="8"
-                   cols="48"
-                   style="border: 1px solid #A0A0A0; background-color: #F0F0F0; padding: 5px; font-family: Tahoma, sans-serif;"
-         ></textarea>
-      </label>
+   <div id="processes" style="margin-left: 300px;padding: 10px;border: 2px solid #C0C0C0;background-color: #E0E0E0;box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);border-radius: 4px;height: fit-content;width: fit-content;">
+   <label>
+      <br>
+      <table style="width: 100%; font-family: Tahoma, sans-serif;" id="memoryProcesses">
+         <caption style="font-size: 16px; margin-bottom: 10px;">PROCESSES</caption>
+         <thead>
+            <tr>
+               <th>PID</th>
+               <th>PC</th>
+               <th>IR</th>
+               <th>ACC</th>
+               <th>X REG</th>
+               <th>Y REG</th>
+               <th>Z FLAG</th>
+               <th>PRIORITY</th>
+               <th>STATE</th>
+               <th>LOCATION</th>
+            </tr>
+         </thead>
+         <tbody id="processTable"></tbody>
+      </table>
+   </label>
    </div>
+   <br>
+   <div id="cpuDisplay" style="margin-left: 300px;padding: 10px;border: 2px solid #C0C0C0;background-color: #E0E0E0;box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);border-radius: 4px;height: fit-content;width: 545px;">
+      <label>
+         <table style="width:100%" id="cpuTable_">
+            <caption>CPU</caption>
+            <tr>
+               <td>PC</td>
+               <td>IR</td>
+               <td>ACC</td>
+               <td>X REG</td>
+               <td>Y REG</td>
+               <td>Z FLAG</td>
+            </tr>
+            <tbody id="cpuTable"></tbody>
+            <br>
+         </table>
+      </label>
+      </div>
+</div>
+
+
    
 
    <div class="task-bar">

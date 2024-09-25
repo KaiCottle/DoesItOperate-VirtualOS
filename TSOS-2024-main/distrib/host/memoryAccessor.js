@@ -1,15 +1,10 @@
-//<reference path="../globals.ts" />
-/* MemoryAccessor
-Memory Accessor is for reading and writing to memory */
 var TSOS;
 (function (TSOS) {
     class MemoryAccessor {
         highorderbyte;
         loworderbyte;
         memory;
-        constructor() {
-            _Kernel.krnTrace("Initialized Memory");
-        }
+        constructor() { }
         read(address) {
             return _Memory.totalMemory[address + _PCB.base];
         }
@@ -23,9 +18,19 @@ var TSOS;
                 }
                 else {
                     _CPU.isExecuting = false;
-                    _StdOut.putText("OUT OF BOUNDS ERROR ON PID: " + (_PCB.PID));
+                    _StdOut.putText("OUT OF BOUNDS: " + (_PCB.PID));
                 }
             }
+        }
+        resetMemory() {
+            for (let address = _PCB.base; address <= _PCB.limit; address++) {
+                _Memory.totalMemory[address] = 0x00;
+                TSOS.Control.updateMemoryDisplay(address);
+            }
+        }
+        tableUpdate() {
+            TSOS.Control.processTableUpdate();
+            TSOS.Control.cpuTableUpdate();
         }
     }
     TSOS.MemoryAccessor = MemoryAccessor;
