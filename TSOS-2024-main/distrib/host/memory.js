@@ -12,6 +12,7 @@ var TSOS;
             this.segment2 = segment2_;
             this.init();
         }
+        // Initialize memory segments to 0x00
         init() {
             for (let i = 0; i < 256; i++) {
                 this.segment0[i] = 0x00;
@@ -19,10 +20,11 @@ var TSOS;
                 this.segment2[i] = 0x00;
             }
         }
+        // Returns a hex string of a number, padded to a given length
         hexLog(theNumber, theLength) {
-            var pad = theNumber.toString(16).toUpperCase();
+            let pad = theNumber.toString(16).toUpperCase();
             while (pad.length < theLength) {
-                pad = 0 + pad;
+                pad = '0' + pad;
             }
             return pad;
         }

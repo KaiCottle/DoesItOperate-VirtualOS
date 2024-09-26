@@ -1,6 +1,8 @@
 var TSOS;
 (function (TSOS) {
-    class pcb {
+    // Thanks Copilot for the commenting :)
+    // Somethin' Stupid -- Frank and Nancy Sinatra
+    class Pcb {
         PID;
         PC;
         IR;
@@ -11,7 +13,17 @@ var TSOS;
         priority;
         state;
         location;
-        constructor(PID = 0, PC = 0, IR = "", Acc = "", Xreg = "", Yreg = "", Zflag = 0, priority = 0, state = "", location = "") {
+        constructor(PID = 0, // Process ID
+        PC = 0, // Program Counter
+        IR = "", // Instruction Register
+        Acc = "", // Accumulator
+        Xreg = "", // X Register
+        Yreg = "", // Y Register
+        Zflag = 0, // Zero flag
+        priority = 0, // Priority level
+        state = "", // Process state (New, Running, Waiting, Terminated, etc.)
+        location = "" // Location in memory (Memory, Disk, etc.)
+        ) {
             this.PID = PID;
             this.PC = PC;
             this.IR = IR;
@@ -23,19 +35,20 @@ var TSOS;
             this.state = state;
             this.location = location;
         }
+        // Initialize the PCB with default values
         init() {
-            this.PID = _PID;
-            this.PC = 0;
-            this.IR = "00";
-            this.Acc = "00";
-            this.Xreg = "00";
-            this.Yreg = "00";
-            this.Zflag = 0;
-            this.priority = 0;
-            this.state = "New";
-            this.location = "Memory";
+            this.PID = _PID; // Set PID from global _PID variable
+            this.PC = 0; // Reset Program Counter to 0
+            this.IR = "00"; // Initialize IR to default instruction
+            this.Acc = "00"; // Initialize Accumulator to 0
+            this.Xreg = "00"; // Initialize X Register to 0
+            this.Yreg = "00"; // Initialize Y Register to 0
+            this.Zflag = 0; // Set Z flag to 0
+            this.priority = 0; // Default priority is 0
+            this.state = "New"; // Initial state is "New"
+            this.location = "Memory"; // Default location is "Memory"
         }
     }
-    TSOS.pcb = pcb;
+    TSOS.Pcb = Pcb;
 })(TSOS || (TSOS = {}));
 //# sourceMappingURL=pcb.js.map

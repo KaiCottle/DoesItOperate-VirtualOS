@@ -7,9 +7,11 @@ var TSOS;
         constructor() {
         }
         init() { }
+        // Read a value from the specified memory address
         read(address) {
             return _Memory.segment0[address];
         }
+        // Write data to the specified memory address
         write(address, data) {
             _Memory.segment0[address] = data;
             TSOS.Control.updateMemoryDisplay(address);
