@@ -86,54 +86,43 @@ var TSOS;
         }
         //Update the process table
         static processTableUpdate() {
+            const { PC, Ir, Acc, Xreg, Yreg, Zflag } = _CPU;
+            const pcb = _PCBList[_PID - 1];
+            const { PID, priority, state, location } = pcb;
+            // Check if processTable element exists
             const processTable = document.getElementById("processTable");
             if (!processTable)
                 return;
-            const newRows = _PCBList.map(pcb => {
-                return `
-                    <tr>
-                        <td>${pcb.PID.toString(16)}</td>
-                        <td>${_CPU.PC.toString(16)}</td>
-                        <td>${_CPU.Ir.toString()}</td>
-                        <td>${_CPU.Acc.toString(16)}</td>
-                        <td>${_CPU.Xreg.toString(16)}</td>
-                        <td>${_CPU.Yreg.toString(16)}</td>
-                        <td>${_CPU.Zflag.toString(16)}</td>
-                        <td>${pcb.priority.toString(16)}</td>
-                        <td>${pcb.state}</td>
-                        <td>${pcb.location.toString(16)}</td>
-                    </tr>
-                `;
-            }).join(''); // Join all rows into a single string
-            processTable.innerHTML = newRows;
+            // Clear the table and update with new values
+            processTable.innerHTML = "";
+            const row = document.createElement("tr");
+            // List of values to update
+            const values = [
+                PID, PC, Ir, Acc, Xreg, Yreg, Zflag,
+                priority, state, location
+            ].map(v => v.toString());
+            values.forEach(value => {
+                const td = document.createElement("td");
+                td.innerHTML = value;
+                row.appendChild(td);
+            });
+            processTable.appendChild(row);
         }
-        //Update the CPU table
+        //Update the CPU table, same logic as process table but for CPU
         static cpuTableUpdate() {
-            if (!_CPU.isExecuting)
-                return;
+            const { PC, Ir, Acc, Xreg, Yreg, Zflag } = _CPU;
             const cpuTable = document.getElementById("cpuTable");
-            if (!cpuTable) {
-                console.error("CPU table element not found.");
+            if (!cpuTable)
                 return;
-            }
-            // Clear the CPU table's current content
-            cpuTable.innerHTML = '';
-            // Get the current values of the CPU registers
-            const registerValues = [
-                _CPU.PC.toString(16),
-                _CPU.Ir.toString(),
-                _CPU.Acc.toString(16),
-                _CPU.Xreg.toString(16),
-                _CPU.Yreg.toString(16),
-                _CPU.Zflag.toString(16)
-            ];
-            // Create a new table row
-            const row = document.createElement('tr');
-            // For each register value, create a new table cell, set its text content to the register value, and append it to the row
-            registerValues.forEach((value) => {
-                const cell = document.createElement('td');
-                cell.textContent = value;
-                row.appendChild(cell);
+            // Clear the table and update with new values
+            cpuTable.innerHTML = "";
+            const row = document.createElement("tr");
+            // List of CPU registers to update
+            const values = [PC, Ir, Acc, Xreg, Yreg, Zflag].map(v => v.toString());
+            values.forEach(value => {
+                const td = document.createElement("td");
+                td.innerHTML = value;
+                row.appendChild(td);
             });
             cpuTable.appendChild(row);
         }
