@@ -293,7 +293,7 @@ module TSOS {
                     userInputArray.push(text[m] + text[m+1]);
                 }
                 console.log("shell log test: " + userInputArray)
-                _PCB = new pcb();
+                _PCB = new Pcb();
                 _PCB.init();
                 _PCB.PID = _PID;
                 _StdOut.putText("PID: " + _PID.toString());
