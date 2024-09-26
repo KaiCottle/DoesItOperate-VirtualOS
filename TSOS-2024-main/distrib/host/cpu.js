@@ -1,15 +1,15 @@
 /* ------------
-     CPU.ts
+   CPU.ts
 
-     Routines for the host CPU simulation, NOT for the OS itself.
-     In this manner, it's A LITTLE BIT like a hypervisor,
-     in that the Document environment inside a browser is the "bare metal" (so to speak) for which we write code
-     that hosts our client OS. But that analogy only goes so far, and the lines are blurred, because we are using
-     TypeScript/JavaScript in both the host and client environments.
+   Routines for the host CPU simulation, NOT for the OS itself.
+   In this manner, it's A LITTLE BIT like a hypervisor,
+   in that the Document environment inside a browser is the "bare metal" (so to speak) for which we write code
+   that hosts our client OS. But that analogy only goes so far, and the lines are blurred, because we are using
+   TypeScript/JavaScript in both the host and client environments.
 
-     This code references page numbers in the text book:
-     Operating System Concepts 8th edition by Silberschatz, Galvin, and Gagne.  ISBN 978-0-470-12872-5
-     ------------ */
+   This code references page numbers in the textbook:
+   Operating System Concepts 8th edition by Silberschatz, Galvin, and Gagne. ISBN 978-0-470-12872-5
+------------ */
 var TSOS;
 (function (TSOS) {
     class Cpu {
@@ -87,7 +87,7 @@ var TSOS;
                 case "EA":
                     this.nopEa();
                     break;
-                case "00":
+                case "0":
                     this.brk00();
                     break;
                 case "EC":
@@ -102,16 +102,12 @@ var TSOS;
                 case "FF":
                     this.sysFf();
                     break;
-                case "0":
-                    this.brk00();
-                    break;
                 default:
-                    _Kernel.krnTrace("Invalid, terminating execution.");
+                    _Kernel.krnTrace("Invalid instruction, terminating execution.");
                     _PCB.state = "Terminated";
                     break;
             }
         }
-        //Tell Me Why - Gotts Street Park 
         // CPU Operations
         // Load Accumulator with a constant
         ldaA9() {
@@ -165,7 +161,7 @@ var TSOS;
         nopEa() {
             this.PC++;
         }
-        //Break
+        // Break (halt execution)
         brk00() {
             this.isExecuting = false;
             _StdOut.advanceLine();
@@ -175,7 +171,7 @@ var TSOS;
         // Compare memory to X register, set Z flag if equal
         cpxEc() {
             this.PC++;
-            let compare = _MemoryAccessor.read(this.littleEndian());
+            const compare = _MemoryAccessor.read(this.littleEndian());
             this.Zflag = this.Xreg === compare ? 1 : 0;
             this.PC += 2;
         }
@@ -194,8 +190,8 @@ var TSOS;
         // Increment value in memory
         incEe() {
             this.PC++;
-            let address = this.littleEndian();
-            let value = _MemoryAccessor.read(address);
+            const address = this.littleEndian();
+            const value = _MemoryAccessor.read(address);
             _MemoryAccessor.write(address, value + 1);
             this.PC += 2;
         }
