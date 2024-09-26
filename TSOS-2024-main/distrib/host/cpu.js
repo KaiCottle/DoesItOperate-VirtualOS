@@ -60,17 +60,17 @@ var TSOS;
         }
         decode() {
             switch (this.Ir) {
-                case "A9":
-                    this.ldaA9();
-                    break;
-                case "AD":
-                    this.ldaAd();
-                    break;
                 case "8D":
                     this.sta8d();
                     break;
                 case "6D":
                     this.adc6d();
+                    break;
+                case "A9":
+                    this.ldaA9();
+                    break;
+                case "AD":
+                    this.ldaAd();
                     break;
                 case "A2":
                     this.ldxA2();
@@ -84,26 +84,26 @@ var TSOS;
                 case "AC":
                     this.ldyAc();
                     break;
-                case "EA":
-                    this.nopEa();
-                    break;
-                case "0":
-                    this.brk00();
-                    break;
-                case "EC":
-                    this.cpxEc();
-                    break;
                 case "D0":
                     this.bneD0();
+                    break;
+                case "EA":
+                    this.nopEa();
                     break;
                 case "EE":
                     this.incEe();
                     break;
+                case "EC":
+                    this.cpxEc();
+                    break;
                 case "FF":
                     this.sysFf();
                     break;
+                case "0":
+                    this.brk00();
+                    break;
                 default:
-                    _Kernel.krnTrace("Invalid instruction, terminating execution.");
+                    _Kernel.krnTrace("Invalid, Terminating.");
                     _PCB.state = "Terminated";
                     break;
             }
@@ -167,6 +167,7 @@ var TSOS;
             _StdOut.advanceLine();
             _StdOut.putText(">");
             _CPU.init();
+            _PCB.state = "Terminated";
         }
         // Compare memory to X register, set Z flag if equal
         cpxEc() {
