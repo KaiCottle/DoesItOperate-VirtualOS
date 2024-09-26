@@ -40,11 +40,14 @@
             public cycle(): void {
                 _Kernel.krnTrace("CPU cycle");
     
-                if (this.isExecuting) {
+                if (_CPU.isExecuting) {
                     this.fetch();
                     Control.processTableUpdate();
                     Control.cpuTableUpdate();
                 }
+            }
+            public connectMemoryAccessor(MemoryAccessor: MemoryAccessor) {
+                this.memoryAccessor = MemoryAccessor;
             }
     
             public fetch(): void {
@@ -55,9 +58,6 @@
             }
     
             public decode(): void {
-                _PCB.state = "Running";
-
-    
                 switch (this.Ir) {
                     case "A9": this.ldaA9(); break;
                     case "AD": this.ldaAd(); break;
@@ -73,6 +73,7 @@
                     case "D0": this.bneD0(); break;
                     case "EE": this.incEe(); break;
                     case "FF": this.sysFf(); break;
+                    case "0": this.brk00(); break;
                     default:
                         _Kernel.krnTrace("Invalid, terminating execution.");
                         _PCB.state = "Terminated";
@@ -199,15 +200,6 @@
                 let address = _MemoryAccessor.read(this.PC);
                 address += 0x100 * _MemoryAccessor.read(this.PC + 1);
                 return address;
-            }
-    
-            public savePCB(): void {
-                _PCB.PC = this.PC;
-                _PCB.Acc = this.Acc;
-                _PCB.IR = this.Ir;
-                _PCB.Xreg = this.Xreg;
-                _PCB.Yreg = this.Yreg;
-                _PCB.Zflag = this.Zflag;
             }
     
             public killProg(pid: number): void {

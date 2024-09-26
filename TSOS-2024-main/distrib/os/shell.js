@@ -204,62 +204,69 @@ var TSOS;
             _Console.BSOD();
         }
         shellLoad(args) {
-            const textInput = document.getElementById("taProgramInput").value.trim().replace(/\s/g, '');
-            // Validate input: check if it's hex and has an even length
-            const isValidHex = /^[A-Fa-f0-9]+$/.test(textInput) && (textInput.length % 2 === 0);
-            if (!isValidHex) {
-                _StdOut.putText("Invalid input. Ensure it's a valid hex string with an even number of characters.");
+            let even = false;
+            var evenCheck = -1;
+            let valid = false;
+            var text = document.getElementById("taProgramInput").value;
+            let regexp = /^[A-Fa-f0-9]+$/;
+            text = text.replace(/\s/g, '');
+            evenCheck = text.length;
+            if (evenCheck % 2 == 0) {
+                even = true;
+            }
+            if (regexp.test(text) && even) {
+                _StdOut.putText("Valid input.");
+                valid = true;
                 _StdOut.advanceLine();
-                _StdOut.putText(">");
-                return;
-            }
-            const userInputArray = textInput.match(/.{1,2}/g) || [];
-            // Initialize the PCB
-            _PCB = new TSOS.pcb();
-            _PCB.init();
-            _PCB.segment = _MemoryManager.segmentAvailable();
-            if (_PCB.segment === -1) {
-                _StdOut.putText("No available memory.");
-                _StdOut.advanceLine();
-                return;
-            }
-            // Check PCB segment, base, and limit initialization
-            _PCB.base = _PCB.segment * 256; // 256 bytes per segment
-            _PCB.limit = _PCB.base + 256;
-            console.log(`PCB initialized with base: ${_PCB.base}, limit: ${_PCB.limit}, segment: ${_PCB.segment}`);
-            // Set PCB properties
-            _PCB.PID = _PID++;
-            _PCB.priority = 5;
-            _PCB.location = "Memory";
-            _PCB.state = "Resident";
-            // Ensure the memory is being allocated properly
-            _PCB.machineCode = userInputArray.concat(new Array(256 - userInputArray.length).fill("00"));
-            _PCBList.push(_PCB);
-            _MemoryManager.allocateSegment(_PCB.machineCode);
-            _StdOut.putText(`PID: ${_PCB.PID} LOADED`);
-            _StdOut.advanceLine();
-            TSOS.Control.processTableUpdate();
-        }
-        shellRun(args) {
-            const pid = Number(args[0]);
-            // Validate PID input
-            if (isNaN(pid) || pid < 0 || pid >= _PCBList.length) {
-                _StdOut.putText("ERROR - INVALID PID");
-                return;
-            }
-            const pcb = _PCBList[pid];
-            // Ensure the PCB is valid and in the "Resident" state
-            if (pcb && pcb.PID === pid && pcb.state === "Resident") {
-                pcb.state = "Ready";
-                _ReadyQueue.enqueue(pcb);
-                _CPU.isExecuting = true;
-                console.log("RUN READY QUEUE: ", _ReadyQueue);
             }
             else {
-                _StdOut.putText("ERROR - INVALID PID or PCB not in Resident state");
+                _StdOut.putText("Invalid input.");
+                _StdOut.advanceLine();
+                _StdOut.putText(">");
+                _StdOut.advanceLine();
+                valid = false;
             }
-            // Update the memory table after state change
-            _MemoryAccessor.tableUpdate();
+            if (valid) {
+                let userInputArray = [];
+                for (let m = 0; m < text.length; m += 2) {
+                    userInputArray.push(text[m] + text[m + 1]);
+                }
+                console.log("shell log test: " + userInputArray);
+                _PCB = new TSOS.pcb();
+                _PCB.init();
+                _PCB.PID = _PID;
+                _StdOut.putText("PID: " + _PID.toString());
+                _StdOut.advanceLine();
+                _PID++;
+                _PCB.priority = 5;
+                _PCB.location = "Memory";
+                _PCB.state = "Ready";
+                _MemoryManager = new TSOS.MemoryManager();
+                _MemoryManager.clearMem();
+                _MemoryManager.writeMem(userInputArray);
+                _PCBList[_PCBList.length] = _PCB;
+                TSOS.Control.processTableUpdate();
+            }
+            else {
+                _PCB.state = "Resident";
+                TSOS.Control.processTableUpdate();
+                TSOS.Control.cpuTableUpdate();
+            }
+        }
+        shellRun(args) {
+            var pidCheck = Number(args[0]);
+            if (pidCheck <= _PCBList.length - 1) {
+                if (_PCBList[pidCheck].PID === pidCheck) {
+                    _PCBList[pidCheck].state = "Executing";
+                    _CPU.isExecuting = true;
+                }
+            }
+            else {
+                _StdOut.putText("ERROR- INVALID PID");
+                _CPU.isExecuting = false;
+            }
+            TSOS.Control.processTableUpdate();
+            TSOS.Control.cpuTableUpdate();
         }
         shellStatus(args) {
             if (args.length > 0) {

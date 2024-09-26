@@ -107,16 +107,37 @@ A9 03 8D 41 00 A9 01 8D 40 00 AC 40 00 A2 01 FF EE 40 00 AE 40 00 EC 41 00 D0 EF
    </div>
    <div><br></div>
    <div id="divMemoryDisplay" style="margin:4px;padding: 10px;width: 250px;height:530px;position: relative;top: -210px;float:left;border: 2px solid #C0C0C0;background-color: #E0E0E0;box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);border-radius: 4px;">
-      <label>
-         Memory Table
-         <br>
-         <div id="divMemoryTable" style="height: 493px; width: auto; overflow:auto" class="memoryTable">
-            <table name="memoryTable"
-                   id="memoryTable"
-            ></table>  
-            </div>
-      </label>
+      <label for="memoryTable">Memory Table</label>
+      <br>
+      <div id="divMemoryTable" style="height: 493px; width: auto; overflow:auto" class="memoryTable">
+         <table name="memoryTable" id="memoryTable">
+         </table>
+      </div>
    </div>
+   
+   <script>
+      const table = document.getElementById('memoryTable');
+      
+      for (let row = 0; row < 32; row++) {
+         const tr = document.createElement('tr');
+         const th = document.createElement('th');
+         
+         th.textContent = '0x' + (row * 8).toString(16).padStart(3, '0').toUpperCase();
+         tr.appendChild(th);
+         
+         for (let col = 0; col < 8; col++) {
+            const td = document.createElement('td');
+            const cellId = (row * 8 + col).toString(16).toUpperCase().padStart(2, '0');
+            
+            td.id = cellId;
+            td.textContent = '00';
+            tr.appendChild(td);
+         }
+   
+         table.appendChild(tr);
+      }
+   </script>
+   
    <div id="processes" style="margin-left: 300px;padding: 10px;border: 2px solid #C0C0C0;background-color: #E0E0E0;box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);border-radius: 4px;height: fit-content;width: fit-content;">
    <label>
       <br>

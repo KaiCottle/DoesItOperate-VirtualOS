@@ -43,11 +43,14 @@ var TSOS;
         }
         cycle() {
             _Kernel.krnTrace("CPU cycle");
-            if (this.isExecuting) {
+            if (_CPU.isExecuting) {
                 this.fetch();
                 TSOS.Control.processTableUpdate();
                 TSOS.Control.cpuTableUpdate();
             }
+        }
+        connectMemoryAccessor(MemoryAccessor) {
+            this.memoryAccessor = MemoryAccessor;
         }
         fetch() {
             this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
@@ -56,7 +59,6 @@ var TSOS;
             TSOS.Control.cpuTableUpdate();
         }
         decode() {
-            _PCB.state = "Running";
             switch (this.Ir) {
                 case "A9":
                     this.ldaA9();
@@ -99,6 +101,9 @@ var TSOS;
                     break;
                 case "FF":
                     this.sysFf();
+                    break;
+                case "0":
+                    this.brk00();
                     break;
                 default:
                     _Kernel.krnTrace("Invalid, terminating execution.");
@@ -213,14 +218,6 @@ var TSOS;
             let address = _MemoryAccessor.read(this.PC);
             address += 0x100 * _MemoryAccessor.read(this.PC + 1);
             return address;
-        }
-        savePCB() {
-            _PCB.PC = this.PC;
-            _PCB.Acc = this.Acc;
-            _PCB.IR = this.Ir;
-            _PCB.Xreg = this.Xreg;
-            _PCB.Yreg = this.Yreg;
-            _PCB.Zflag = this.Zflag;
         }
         killProg(pid) {
             this.isExecuting = false;

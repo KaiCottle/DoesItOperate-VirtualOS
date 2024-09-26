@@ -41,31 +41,10 @@ module TSOS {
             }
 
             // Initialize memory display.
-            this.initMemoryDisplay();
+            //this.initMemoryDisplay();
         }
 
-        public static initMemoryDisplay(): void {
-            const memoryDisplay = <HTMLTableElement>document.getElementById("memoryTable");
-
-            // Create rows for memory addresses and values.
-            for (let i = 0; i < 256; i += 8) {
-                const row = memoryDisplay.insertRow();
-                const formattedAddress = `0x${i.toString(16).toUpperCase().padStart(3, '0')}`;
-
-                // Set the first cell as the address in hex.
-                row.insertCell(0).textContent = formattedAddress;
-
-                // Initialize 8 memory values in each row.
-                for (let j = 0; j < 8; j++) {
-                    const cell = row.insertCell(j + 1);
-                    const memoryCellId = `memory-cell-${i + j}`;
-                    cell.setAttribute('id', memoryCellId);
-                    cell.textContent = "00";
-                }
-            }
-        }
-
-        public static memoryDisplayUpdate(address: number): void {
+        public static updateMemoryDisplay(address: number): void {
             var Address = address.toString(16);
             if (Address.length == 1) {
                 Address = "0" + (Address.toUpperCase());
@@ -76,7 +55,7 @@ module TSOS {
 
             var mem = document.getElementById(Address);
             if (mem != null) {
-                var addressInsert = _Memory.totalMemory[address];
+                var addressInsert = _Memory.segment0[address];
                 mem.innerText = addressInsert.toString(16).padStart(2, '0').toUpperCase();
             }
         }
@@ -147,7 +126,6 @@ module TSOS {
             processTable.innerHTML = newRows;
         }
         
-
         //Update the CPU table
         public static cpuTableUpdate(): void {
             if (!_CPU.isExecuting) return;

@@ -26,18 +26,14 @@ const KEYBOARD_IRQ: number = 1;
 // TODO: Make a global object and use that instead of the "_" naming convention in the global namespace.
 //
 
-//Hardware
-var _CPU: TSOS.Cpu;  // Utilize TypeScript's type annotation system to ensure that _CPU is an instance of the Cpu class.
+var _CPU: TSOS.Cpu;
 var _Memory: TSOS.Memory;
 var _MemoryAccessor: TSOS.MemoryAccessor; 
-
-// Software (OS)
 var _MemoryManager: any	=	null;
+
 var _PID: number = 0;
 var _PCB: TSOS.pcb;
 var _PCBList = [];
-var _Segments = [];
-var _Cycle: number = 0;
 
 var _OSclock: number = 0;  // Page 23.
 
@@ -56,8 +52,6 @@ var _Kernel: TSOS.Kernel;
 var _KernelInterruptQueue: TSOS.Queue = null;
 var _KernelInputQueue: TSOS.Queue = null; 
 var _KernelBuffers = null; 
-
-var _ReadyQueue: TSOS.Queue = null;
 
 // Standard input and output
 var _StdIn:  TSOS.Console = null; 
