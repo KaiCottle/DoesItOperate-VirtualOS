@@ -263,12 +263,11 @@ module TSOS {
         }
 
         public shellLoad(args: string[]): void {
-        
             const textInput = (<HTMLInputElement>document.getElementById("taProgramInput")).value.trim().replace(/\s/g, '');
         
             // Validate input: check if it's hex and has an even length
             const isValidHex = /^[A-Fa-f0-9]+$/.test(textInput) && (textInput.length % 2 === 0);
-        
+            
             if (!isValidHex) {
                 _StdOut.putText("Invalid input. Ensure it's a valid hex string with an even number of characters.");
                 _StdOut.advanceLine();
@@ -276,42 +275,41 @@ module TSOS {
                 return;
             }
         
-            // Convert hex string into an array of two-character byte pairs
             const userInputArray: string[] = textInput.match(/.{1,2}/g) || [];
         
-            // Initialize the PCB and MemoryManager if valid input is provided
+            // Initialize the PCB
             _PCB = new pcb();
             _PCB.init();
-            _MemoryManager = new MemoryManager();
-            _PCB.segment = _MemoryManager.segmentAvailable();
         
+            _PCB.segment = _MemoryManager.segmentAvailable();
             if (_PCB.segment === -1) {
                 _StdOut.putText("No available memory.");
                 _StdOut.advanceLine();
                 return;
             }
         
-            // Count non-terminated PCBs
-            const activePCBs = _PCBList.filter(pcb => pcb.state !== "Terminated").length;
+            // Check PCB segment, base, and limit initialization
+            _PCB.base = _PCB.segment * 256;  // 256 bytes per segment
+            _PCB.limit = _PCB.base + 256;
         
-            // Set PCB properties and allocate memory
+            console.log(`PCB initialized with base: ${_PCB.base}, limit: ${_PCB.limit}, segment: ${_PCB.segment}`);
+            
+            // Set PCB properties
             _PCB.PID = _PID++;
             _PCB.priority = 5;
             _PCB.location = "Memory";
             _PCB.state = "Resident";
         
-            // Pad the machineCode array to 256 elements using "00" if necessary
+            // Ensure the memory is being allocated properly
             _PCB.machineCode = userInputArray.concat(new Array(256 - userInputArray.length).fill("00"));
+            _PCBList.push(_PCB);
         
-            _PCBList.push(_PCB); // Add the PCB to the list
             _MemoryManager.allocateSegment(_PCB.machineCode);
         
-            // Output success message and update the process table
             _StdOut.putText(`PID: ${_PCB.PID} LOADED`);
             _StdOut.advanceLine();
             Control.processTableUpdate();
         }
-        
         
         public shellRun(args: string[]): void {
     const pid = Number(args[0]);

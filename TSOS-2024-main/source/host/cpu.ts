@@ -13,6 +13,10 @@
 
      module TSOS {
         export class Cpu {
+            public HOB: number;
+            public LOB: number;
+            public memoryAccessor: MemoryAccessor;
+
             constructor(
                 public PC: number = 0,
                 public Acc: number = 0,
@@ -38,22 +42,21 @@
     
                 if (this.isExecuting) {
                     this.fetch();
-                    _MemoryAccessor.tableUpdate();
-                    _Cycle++;
-                    _PCB.waitRun++;
+                    Control.processTableUpdate();
+                    Control.cpuTableUpdate();
                 }
             }
     
             public fetch(): void {
-                if (_PCB.state !== "Terminated") {
-                    this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
-                    this.decode();
-                }
-                _MemoryAccessor.tableUpdate();
+                this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
+                this.decode();
+                Control.processTableUpdate();
+                Control.cpuTableUpdate();
             }
     
             public decode(): void {
                 _PCB.state = "Running";
+
     
                 switch (this.Ir) {
                     case "A9": this.ldaA9(); break;
@@ -71,12 +74,13 @@
                     case "EE": this.incEe(); break;
                     case "FF": this.sysFf(); break;
                     default:
-                        _Kernel.krnTrace("Invalid instruction, terminating execution.");
+                        _Kernel.krnTrace("Invalid, terminating execution.");
                         _PCB.state = "Terminated";
-                        _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
                         break;
                 }
             }
+
+            //Tell Me Why - Gotts Street Park 
     
             // CPU Operations
             // Load Accumulator with a constant
@@ -141,33 +145,11 @@
             }
             
             //Break
-            public brk00(): void {
-                _PCB.cycleEnd = _Cycle;
-                _PCB.state = "Terminated";
-                _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
-    
-                let turnaround = _PCB.cycleEnd - _PCB.cycleStart;
-                let waitTime = turnaround - _PCB.waitRun;
-                _PCB.turnAround = turnaround;
-                _PCB.waitTime = waitTime;
-    
-                if (_ReadyQueue.getSize() < 1) {
-                    _StdOut.advanceLine();
-                    _PCBList.forEach((pcb) => {
-                        if (pcb.state === "Terminated") {
-                            _StdOut.putText(`PID: ${pcb.PID}`);
-                            _StdOut.advanceLine();
-                            _StdOut.putText(`Turnaround Time: ${pcb.turnAround}`);
-                            _StdOut.advanceLine();
-                            _StdOut.putText(`Wait Time: ${pcb.waitTime}`);
-                            _StdOut.advanceLine();
-                        }
-                    });
-                    _StdOut.advanceLine();
-                    _StdOut.putText(">");
-                    this.isExecuting = false;
-                    _CPU.init();
-                }
+            public brk00() {
+                this.isExecuting = false;
+                _StdOut.advanceLine();
+                _StdOut.putText(">");
+                _CPU.init();
             }
             
             // Compare memory to X register, set Z flag if equal

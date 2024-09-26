@@ -10,25 +10,30 @@ module TSOS {
             return _Memory.totalMemory[address + _PCB.base];
         }
 
-        public write(offset: number, data: number) {
-            var Address = offset + _PCB.base;
-            console.log(`Writing data to absolute address: ${Address}, Data: ${data}`);
-        
+        public write(address: number, data: number) {
+            //console.log("cur state: " + _PCB.state);
+            //var offSet = (Number(address) + Number(_PCB.base));
+            //console.log("address: " + address );
+            //console.log("base: " + _PCB.base);
+            //console.log("limit: " + _PCB.limit);
+            //console.log("offSet: " + offSet);
+            var addy = address + _PCB.base;
             if ((_PCB.state === "Resident") || (_PCB.state === "Ready") || (_PCB.state === "Running")) {
-                if ((Address >= _PCB.base) && (Address <= _PCB.limit)) {
-                    _Memory.totalMemory[Address] = data;
-                    TSOS.Control.updateMemoryDisplay(Address);
-                } else {
-                    _CPU.isExecuting = false;
-                    _StdOut.putText("OUT OF BOUNDS: " + (_PCB.PID));
+                if ((addy >= _PCB.base) && (addy <= _PCB.limit)) {
+                    _Memory.totalMemory[addy] = data;
+                    TSOS.Control.memoryDisplayUpdate(addy);
                 }
-            }
+                else {
+                    _CPU.isExecuting = false;
+                    _StdOut.putText("OUT OF BOUNDS ERROR ON PID: " + (_PCB.PID));
+                }
+            }//if state
         }
 
         public resetMemory(): void {
             for (let address = _PCB.base; address <= _PCB.limit; address++) {
                 _Memory.totalMemory[address] = 0x00;
-                TSOS.Control.updateMemoryDisplay(address);
+                TSOS.Control.memoryDisplayUpdate(address);
             }
         }
 

@@ -20,6 +20,9 @@ var TSOS;
         Yreg;
         Zflag;
         isExecuting;
+        HOB;
+        LOB;
+        memoryAccessor;
         constructor(PC = 0, Acc = 0, Ir = "", Xreg = 0, Yreg = 0, Zflag = 0, isExecuting = false) {
             this.PC = PC;
             this.Acc = Acc;
@@ -42,17 +45,15 @@ var TSOS;
             _Kernel.krnTrace("CPU cycle");
             if (this.isExecuting) {
                 this.fetch();
-                _MemoryAccessor.tableUpdate();
-                _Cycle++;
-                _PCB.waitRun++;
+                TSOS.Control.processTableUpdate();
+                TSOS.Control.cpuTableUpdate();
             }
         }
         fetch() {
-            if (_PCB.state !== "Terminated") {
-                this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
-                this.decode();
-            }
-            _MemoryAccessor.tableUpdate();
+            this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
+            this.decode();
+            TSOS.Control.processTableUpdate();
+            TSOS.Control.cpuTableUpdate();
         }
         decode() {
             _PCB.state = "Running";
@@ -100,12 +101,12 @@ var TSOS;
                     this.sysFf();
                     break;
                 default:
-                    _Kernel.krnTrace("Invalid instruction, terminating execution.");
+                    _Kernel.krnTrace("Invalid, terminating execution.");
                     _PCB.state = "Terminated";
-                    _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
                     break;
             }
         }
+        //Tell Me Why - Gotts Street Park 
         // CPU Operations
         // Load Accumulator with a constant
         ldaA9() {
@@ -161,30 +162,10 @@ var TSOS;
         }
         //Break
         brk00() {
-            _PCB.cycleEnd = _Cycle;
-            _PCB.state = "Terminated";
-            _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
-            let turnaround = _PCB.cycleEnd - _PCB.cycleStart;
-            let waitTime = turnaround - _PCB.waitRun;
-            _PCB.turnAround = turnaround;
-            _PCB.waitTime = waitTime;
-            if (_ReadyQueue.getSize() < 1) {
-                _StdOut.advanceLine();
-                _PCBList.forEach((pcb) => {
-                    if (pcb.state === "Terminated") {
-                        _StdOut.putText(`PID: ${pcb.PID}`);
-                        _StdOut.advanceLine();
-                        _StdOut.putText(`Turnaround Time: ${pcb.turnAround}`);
-                        _StdOut.advanceLine();
-                        _StdOut.putText(`Wait Time: ${pcb.waitTime}`);
-                        _StdOut.advanceLine();
-                    }
-                });
-                _StdOut.advanceLine();
-                _StdOut.putText(">");
-                this.isExecuting = false;
-                _CPU.init();
-            }
+            this.isExecuting = false;
+            _StdOut.advanceLine();
+            _StdOut.putText(">");
+            _CPU.init();
         }
         // Compare memory to X register, set Z flag if equal
         cpxEc() {

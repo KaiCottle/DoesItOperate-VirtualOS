@@ -65,17 +65,19 @@ module TSOS {
             }
         }
 
-        public static updateMemoryDisplay(address: number): void {
-            const formattedAddress = address.toString(16).toUpperCase().padStart(2, '0');
-            const memoryCell = document.getElementById(formattedAddress);
-
-            if (memoryCell) {
-                const memoryValue = _Memory.totalMemory[address].toString(16).padStart(2, '0').toUpperCase();
-                memoryCell.textContent = memoryValue;
+        public static memoryDisplayUpdate(address: number): void {
+            var Address = address.toString(16);
+            if (Address.length == 1) {
+                Address = "0" + (Address.toUpperCase());
             }
-            if (memoryCell != null) {
+            else {
+                Address = Address.toUpperCase();
+            }
+
+            var mem = document.getElementById(Address);
+            if (mem != null) {
                 var addressInsert = _Memory.totalMemory[address];
-                memoryCell.innerText = addressInsert.toString(16).padStart(2, '0').toUpperCase();
+                mem.innerText = addressInsert.toString(16).padStart(2, '0').toUpperCase();
             }
         }
 

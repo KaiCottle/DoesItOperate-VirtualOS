@@ -8,75 +8,43 @@ var TSOS;
         }
         clearSegment(base, limit) {
             for (let i = base; i < limit; i++) {
-                _Memory.totalMemory[i] = 0x00;
+                _MemoryAccessor.write(i, 0x00); // Clear the memory to 00
+                let memoryCell = document.getElementById(`memory-cell-${i}`);
+                if (memoryCell) {
+                    memoryCell.textContent = "00"; // Reset the display to show memory is cleared
+                }
             }
-            for (let m = base; m < limit; m++) {
-                TSOS.Control.updateMemoryDisplay(m);
-            }
-            _MemoryAccessor.tableUpdate();
+            console.log(`Cleared memory segment from ${base} to ${limit}`);
         }
         allocateSegment(inputArray) {
-            // Segment 0
-            if (_PCB.segment === 0) {
-                this.clearSegment(_PCB.base, _PCB.limit);
-                var w = 0;
-                for (let m = _PCB.base; m < _PCB.limit && w < inputArray.length; m++) {
-                    let data = parseInt(inputArray[w] ?? "00", 16);
-                    console.log(`Writing to memory address: ${m}, Data: ${data}`);
-                    _MemoryAccessor.write(m, data);
-                    // Update the memory display cell corresponding to this memory address
-                    let memoryCell = document.getElementById(`memory-cell-${m}`);
-                    if (memoryCell) {
-                        memoryCell.textContent = data.toString(16).toUpperCase().padStart(2, '0');
-                    }
-                    w++;
+            // No clearing here, only writing the program to memory
+            let w = 0;
+            for (let m = _PCB.base; m < _PCB.limit && w < inputArray.length; m++) {
+                let data = parseInt(inputArray[w] ?? "00", 16);
+                console.log(`Writing to memory address: ${m}, Data: ${data}`);
+                _MemoryAccessor.write(m, data);
+                // Update the memory display cell corresponding to this memory address
+                let memoryCell = document.getElementById(`memory-cell-${m}`);
+                if (memoryCell) {
+                    memoryCell.textContent = data.toString(16).toUpperCase().padStart(2, '0');
                 }
-                this.memSegment0 = true;
+                w++;
             }
-            // Segment 1
-            if (_PCB.segment === 1) {
-                this.clearSegment(_PCB.base, _PCB.limit);
-                var w = 0;
-                for (let m = _PCB.base; m < _PCB.limit && w < inputArray.length; m++) {
-                    let data = parseInt(inputArray[w] ?? "00", 16);
-                    console.log(`Writing to memory address: ${m}, Data: ${data}`);
-                    _MemoryAccessor.write(m, data);
-                    // Update the memory display cell corresponding to this memory address
-                    let memoryCell = document.getElementById(`memory-cell-${m}`);
-                    if (memoryCell) {
-                        memoryCell.textContent = data.toString(16).toUpperCase().padStart(2, '0');
-                    }
-                    w++;
-                }
-                this.memSegment0 = true;
-            }
-            // Segment 2
-            if (_PCB.segment === 3) {
-                this.clearSegment(_PCB.base, _PCB.limit);
-                var w = 0;
-                for (let m = _PCB.base; m < _PCB.limit && w < inputArray.length; m++) {
-                    let data = parseInt(inputArray[w] ?? "00", 16);
-                    console.log(`Writing to memory address: ${m}, Data: ${data}`);
-                    _MemoryAccessor.write(m, data);
-                    // Update the memory display cell corresponding to this memory address
-                    let memoryCell = document.getElementById(`memory-cell-${m}`);
-                    if (memoryCell) {
-                        memoryCell.textContent = data.toString(16).toUpperCase().padStart(2, '0');
-                    }
-                    w++;
-                }
-                this.memSegment0 = true;
-            }
-            // Debugging output
-            console.log(`CUR BASE: ${_PCB.base}, CUR LIMIT: ${_PCB.limit}, SEGMENT: ${_PCB.segment}`);
-            console.log("Segment allocator memory: ", _Memory.totalMemory);
+            console.log(`Memory written to segment ${_PCB.segment} from base ${_PCB.base} to limit ${_PCB.limit}`);
         }
         segmentAvailable() {
-            let segmentNumber = -1;
-            if (_PCBList.length < 3) {
-                segmentNumber = _PCBList.length;
+            if (!this.memSegment0) {
+                return 0;
             }
-            return segmentNumber;
+            else if (!this.memSegment1) {
+                return 1;
+            }
+            else if (!this.memSegment2) {
+                return 2;
+            }
+            else {
+                return -1; // No available segments
+            }
         }
     }
     TSOS.MemoryManager = MemoryManager;
