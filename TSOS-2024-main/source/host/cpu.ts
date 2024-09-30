@@ -80,7 +80,129 @@ module TSOS {
                     break;
             }
         }
+
         // CPU Operations
         // Load Accumulator with a constant
+        public ldaA9(): void {
+            this.PC++;
+            this.Acc = _MemoryAccessor.read(this.PC);
+            this.PC++;
+        }
+
+        // Load Accumulator from memory
+        public ldaAd(): void {
+            this.PC++;
+            this.Acc = _MemoryAccessor.read(this.littleEndian());
+            this.PC += 2;
+        }
+
+        // Store Accumulator in memory
+        public sta8d(): void {
+            this.PC++;
+            _MemoryAccessor.write(this.littleEndian(), this.Acc);
+            this.PC += 2;
+        }
+
+        // Add with carry
+        public adc6d(): void {
+            this.PC++;
+            this.Acc += _MemoryAccessor.read(this.littleEndian());
+            this.PC += 2;
+        }
+
+        // Load X register with a constant
+        public ldxA2(): void {
+            this.PC++;
+            this.Xreg = _MemoryAccessor.read(this.PC);
+            this.PC++;
+        }
+
+        // Load X register from memory
+        public ldxAe(): void {
+            this.PC++;
+            this.Xreg = _MemoryAccessor.read(this.littleEndian());
+            this.PC += 2;
+        }
+
+        // Load Y register with a constant
+        public ldyA0(): void {
+            this.PC++;
+            this.Yreg = _MemoryAccessor.read(this.PC);
+            this.PC++;
+        }
+
+        // Load Y register from memory
+        public ldyAc(): void {
+            this.PC++;
+            this.Yreg = _MemoryAccessor.read(this.littleEndian());
+            this.PC += 2;
+        }
+
+        // No operation
+        public nopEa(): void {
+            this.PC++;
+        }
+
+        // Break (halt execution)
+        public brk00(): void {
+            this.isExecuting = false;
+            _StdOut.advanceLine();
+            _StdOut.putText(">");
+            _CPU.init();
+            _PCB.state = "Terminated";
+        }
+
+        // Compare memory to X register, set Z flag if equal
+        public cpxEc(): void {
+            this.PC++;
+            const compare = _MemoryAccessor.read(this.littleEndian());
+            this.Zflag = this.Xreg === compare ? 1 : 0;
+            this.PC += 2;
+        }
+
+        // Branch if Z flag is 0
+        public bneD0(): void {
+            this.PC++;
+            if (this.Zflag === 0) {
+                this.PC += _MemoryAccessor.read(this.PC) + 1;
+                if (this.PC > 255) this.PC -= 256;
+            } else {
+                this.PC++;
+            }
+        }
+
+        // Increment value in memory
+        public incEe(): void {
+            this.PC++;
+            const address = this.littleEndian();
+            const value = _MemoryAccessor.read(address);
+            _MemoryAccessor.write(address, value + 1);
+            this.PC += 2;
+        }
+
+        // System call (print integer or string based on X register)
+        public sysFf(): void {
+            this.PC++;
+            if (this.Xreg === 1) {
+                _StdOut.putText(this.Yreg.toString(16));
+            } else if (this.Xreg === 2) {
+                let address = this.Yreg;
+                while (_MemoryAccessor.read(address) !== 0x0) {
+                    _StdOut.putText(String.fromCharCode(_MemoryAccessor.read(address)));
+                    address++;
+                }
+            }
+        }
+
+        // Helper Methods
+        public littleEndian(): number {
+            let address = _MemoryAccessor.read(this.PC);
+            address += 0x100 * _MemoryAccessor.read(this.PC + 1);
+            return address;
+        }
+
+        public killProg(pid: number): void {
+            this.isExecuting = false;
+        }
     }
 }
