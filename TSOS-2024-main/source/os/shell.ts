@@ -285,8 +285,15 @@ module TSOS {
             _StdOut.advanceLine();
             valid = false;
            }
-  
 
+           if(_PID > 2){
+            _StdOut.putText("Memory full, please clear memory to load more programs.");
+            _StdOut.advanceLine();
+            _StdOut.putText(">");
+            _StdOut.advanceLine();
+            valid = false;
+           }
+  
             if (valid) {
                 let userInputArray: Array<string> = [];
                 for (let m = 0; m < text.length; m+=2) {
