@@ -325,21 +325,6 @@ module TSOS {
             }
         }
         
-        public shellRun(args: string[]) {
-            var pidCheck = Number(args[0]);
-            if (pidCheck <= _PCBList.length - 1) {
-                if (_PCBList[pidCheck].PID === pidCheck) {
-                    _PCBList[pidCheck].state = "Executing";
-                    _CPU.isExecuting = true;
-                }
-            }
-            else {
-                _StdOut.putText("ERROR- INVALID PID");
-                _CPU.isExecuting = false;
-            }
-            Control.processTableUpdate();
-            Control.cpuTableUpdate();
-        }
 
         
         
