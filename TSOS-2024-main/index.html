@@ -138,6 +138,50 @@ A9 03 8D 41 00 A9 01 8D 40 00 AC 40 00 A2 01 FF EE 40 00 AE 40 00 EC 41 00 D0 EF
       }
    </script>
    
+   <div id="processes" style="margin-left: 300px;padding: 10px;border: 2px solid #C0C0C0;background-color: #E0E0E0;box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);border-radius: 4px;height: fit-content;width: fit-content;">
+   <label>
+      <br>
+      <table style="width: 100%; font-family: Tahoma, sans-serif;" id="memoryProcesses">
+         <caption style="font-size: 16px; margin-bottom: 10px;">PROCESSES</caption>
+         <thead>
+            <tr>
+               <th>PID</th>
+               <th>PC</th>
+               <th>IR</th>
+               <th>ACC</th>
+               <th>X REG</th>
+               <th>Y REG</th>
+               <th>Z FLAG</th>
+               <th>PRIORITY</th>
+               <th>STATE</th>
+               <th>LOCATION</th>
+            </tr>
+         </thead>
+         <tbody id="processTable"></tbody>
+      </table>
+   </label>
+   </div>
+   <br>
+   <div id="cpuDisplay" style="margin-left: 300px;padding: 10px;border: 2px solid #C0C0C0;background-color: #E0E0E0;box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);border-radius: 4px;height: fit-content;width: 545px;">
+      <label>
+         <table style="width:100%" id="cpuTable_">
+            <caption>CPU</caption>
+            <tr>
+               <td>PC</td>
+               <td>IR</td>
+               <td>ACC</td>
+               <td>X REG</td>
+               <td>Y REG</td>
+               <td>Z FLAG</td>
+            </tr>
+            <tbody id="cpuTable"></tbody>
+            <br>
+         </table>
+      </label>
+      </div>
+</div>
+
+
    
 
    <div class="task-bar">
