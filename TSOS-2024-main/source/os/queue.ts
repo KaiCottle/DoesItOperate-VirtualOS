@@ -36,7 +36,7 @@ module TSOS {
         public removeLast() {
             var retVal = null;
             if (this.q.length > 0) {
-                retVal = this.q.pop(); // Removes the last item
+                retVal = this.q.pop(); // Removes the last item -> ChatGPT suggested this... my stack knowledge is rusty
             }
             return retVal;
         }

@@ -299,7 +299,6 @@ module TSOS {
                 for (let m = 0; m < text.length; m+=2) {
                     userInputArray.push(text[m] + text[m+1]);
                 }
-                console.log("shell log test: " + userInputArray)
                 _PCB = new Pcb();
                 _PCB.init();
                 _PCB.PID = _PID;
@@ -349,7 +348,7 @@ module TSOS {
                 const statusElement = document.getElementById("status"); 
         
                 if (statusElement) {
-                    statusElement.innerHTML = "Status: " + status; // Updates the HTML
+                    statusElement.innerHTML = "Status: " + status;
                     _StdOut.putText("Status set to: " + status);
                 } else {
                     _StdOut.putText("Error: Status element not found.");
@@ -386,7 +385,6 @@ module TSOS {
                     case "help":
                         _StdOut.putText("Help displays a list of (hopefully) valid commands.");
                         break;
-                    // TODO: Make descriptive MANual page entries for the rest of the shell commands here.
                     case "ver":
                         _StdOut.putText("Displays the current version data.");
                         break;
@@ -464,7 +462,6 @@ module TSOS {
 
         public shellRot13(args: string[]) {
             if (args.length > 0) {
-                // Requires Utils.ts for rot13() function.
                 _StdOut.putText(args.join(' ') + " = '" + Utils.rot13(args.join(' ')) +"'");
             } else {
                 _StdOut.putText("Usage: rot13 <string>  Please supply a string.");

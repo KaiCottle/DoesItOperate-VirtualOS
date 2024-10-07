@@ -1,6 +1,6 @@
 module TSOS {
     // Thanks Copilot for the commenting :)
-    // Somethin' Stupid -- Frank and Nancy Sinatra
+    // Somethin' Stupid -- Frank and Nancy Sinatra -> My song for Github Copilot
     export class Pcb {
         constructor(
             public PID: number = 0,      // Process ID
