@@ -207,60 +207,57 @@ var TSOS;
             _Console.BSOD();
         }
         shellLoad(args) {
-            let even = false;
-            var evenCheck = -1;
-            let valid = false;
-            var text = document.getElementById("taProgramInput").value;
-            let regexp = /^[A-Fa-f0-9]+$/;
-            text = text.replace(/\s/g, '');
-            evenCheck = text.length;
-            if (evenCheck % 2 == 0) {
-                even = true;
+            // Check if CPU is executing
+            if (_CPU.isExecuting) {
+                _StdOut.putText("Unable to load programs while CPU is executing.");
+                return;
             }
-            if (regexp.test(text) && even) {
-                _StdOut.putText("Valid input.");
-                valid = true;
-                _StdOut.advanceLine();
-            }
-            else {
+            // Retrieve and sanitize input
+            const text = document.getElementById("taProgramInput")
+                .value.replace(/\s/g, '');
+            // Validate input using regex and even length check
+            const isValidHex = /^[A-Fa-f0-9]+$/.test(text);
+            const isEvenLength = text.length % 2 === 0;
+            if (!isValidHex || !isEvenLength) {
                 _StdOut.putText("Invalid input.");
                 _StdOut.advanceLine();
-                _StdOut.putText(">");
-                _StdOut.advanceLine();
-                valid = false;
+                return;
             }
-            if (_PID > 2) {
-                _StdOut.putText("Memory full, please clear memory to load more programs.");
-                _StdOut.advanceLine();
-                _StdOut.putText(">");
-                _StdOut.advanceLine();
-                valid = false;
+            _StdOut.putText("Valid input.");
+            _StdOut.advanceLine();
+            // Convert input into an array of bytes
+            const userInputArray = [];
+            for (let i = 0; i < text.length; i += 2) {
+                userInputArray.push(text[i] + text[i + 1]);
             }
-            if (valid) {
-                let userInputArray = [];
-                for (let m = 0; m < text.length; m += 2) {
-                    userInputArray.push(text[m] + text[m + 1]);
-                }
-                _PCB = new TSOS.Pcb();
-                _PCB.init();
-                _PCB.PID = _PID;
-                _StdOut.putText("PID: " + _PID.toString());
+            // Initialize a new PCB
+            _PCB = new TSOS.Pcb();
+            _PCB.init();
+            // Create a new MemoryManager and find an available segment
+            _MemoryManager = new TSOS.MemoryManager();
+            const availableSegment = _MemoryManager.segmentAvailable();
+            if (availableSegment === -1) {
+                _StdOut.putText("No available memory.");
                 _StdOut.advanceLine();
-                _PID++;
-                _PCB.priority = 5;
-                _PCB.location = "Memory";
-                _PCB.state = "Ready";
-                _MemoryManager = new TSOS.MemoryManager();
-                _MemoryManager.clearMem();
-                _MemoryManager.writeMem(userInputArray);
-                _PCBList[_PCBList.length] = _PCB;
-                TSOS.Control.processTableUpdate();
+                return;
             }
-            else {
-                _PCB.state = "Resident";
-                TSOS.Control.processTableUpdate();
-                TSOS.Control.cpuTableUpdate();
-            }
+            // Set up the PCB
+            _PCB.PID = _PID++;
+            _PCB.priority = 5;
+            _PCB.location = "Memory";
+            _PCB.state = "Resident";
+            _PCB.segment = availableSegment;
+            _PCB.machineCode = userInputArray;
+            _PCB.setBaseLimit();
+            // Add the PCB to the PCB list
+            _PCBList.push(_PCB);
+            // Allocate memory for the process
+            _MemoryManager.allocateSegment(userInputArray);
+            // Update process table
+            TSOS.Control.processTableUpdate();
+            // Display success message
+            _StdOut.putText(`PID: ${_PCB.PID.toString()} loaded successfully.`);
+            _StdOut.advanceLine();
         }
         shellRun(args) {
             var pidCheck = Number(args[0]);

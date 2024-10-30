@@ -1,31 +1,30 @@
 /* ------------
-   CPU.ts
+ CPU.ts
 
-   Routines for the host CPU simulation, NOT for the OS itself.
-   In this manner, it's A LITTLE BIT like a hypervisor,
-   in that the Document environment inside a browser is the "bare metal" (so to speak) for which we write code
-   that hosts our client OS. But that analogy only goes so far, and the lines are blurred, because we are using
-   TypeScript/JavaScript in both the host and client environments.
+ Routines for the host CPU simulation, NOT for the OS itself.
+ In this manner, it's A LITTLE BIT like a hypervisor,
+ in that the Document environment inside a browser is the "bare metal" (so to speak) for which we write code
+ that hosts our client OS. But that analogy only goes so far, and the lines are blurred, because we are using
+ TypeScript/JavaScript in both the host and client environments.
 
-   This code references page numbers in the textbook:
-   Operating System Concepts 8th edition by Silberschatz, Galvin, and Gagne. ISBN 978-0-470-12872-5
------------- */
+ This code references page numbers in the text book:
+ Operating System Concepts 8th edition by Silberschatz, Galvin, and Gagne.  ISBN 978-0-470-12872-5
+ ------------ */
 
-module TSOS {
+ module TSOS {
     export class Cpu {
-        public HOB: number;
-        public LOB: number;
-        public memoryAccessor: MemoryAccessor;
+        public low: number;
+        public hi: number;
+        public memAcc: MemoryAccessor;
 
-        constructor(
-            public PC: number = 0,
+        constructor(public PC: number = 0,
             public Acc: number = 0,
             public Ir: string = "",
             public Xreg: number = 0,
             public Yreg: number = 0,
             public Zflag: number = 0,
-            public isExecuting: boolean = false
-        ) {}
+            public isExecuting: boolean = false) {
+        }
 
         public init(): void {
             this.PC = 0;
@@ -37,171 +36,207 @@ module TSOS {
             this.isExecuting = false;
         }
 
-        public cycle(): void {
-            _Kernel.krnTrace("CPU cycle");
+        public connectMemoryAccessor(MemoryAccessor: MemoryAccessor) {
+            this.memAcc = MemoryAccessor;
+        }
 
+        public cycle(): void {
             if (_CPU.isExecuting) {
                 this.fetch();
-                Control.processTableUpdate();
-                Control.cpuTableUpdate();
+                _MemoryAccessor.updateTables();
+                _Cycle++;
+                _PCB.waitRun++;
             }
         }
 
-        public connectMemoryAccessor(MemoryAccessor: MemoryAccessor) {
-            this.memoryAccessor = MemoryAccessor;
-        }
-
-        public fetch(): void {
-            this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
-            this.decode();
-            Control.processTableUpdate();
-            Control.cpuTableUpdate();
+        public fetch() {
+            if (_PCB.state != "Terminated") {
+                this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
+                this.decode();
+            }
+            _MemoryAccessor.updateTables();
         }
 
         public decode(): void {
+            _PCB.state = "Running";
             switch (this.Ir) {
-                case "8D": this.sta8d(); break;
-                case "6D": this.adc6d(); break;
                 case "A9": this.ldaA9(); break;
                 case "AD": this.ldaAd(); break;
+                case "8D": this.sta8d(); break;
+                case "6D": this.adc6d(); break;
                 case "A2": this.ldxA2(); break;
                 case "AE": this.ldxAe(); break;
                 case "A0": this.ldyA0(); break;
                 case "AC": this.ldyAc(); break;
-                case "D0": this.bneD0(); break;
                 case "EA": this.nopEa(); break;
-                case "EE": this.incEe(); break;
-                case "EC": this.cpxEc(); break;
-                case "FF": this.sysFf(); break;
                 case "0": this.brk00(); break;
+                case "EC": this.cpxEc(); break;
+                case "D0": this.bneD0(); break;
+                case "EE": this.incEe(); break;
+                case "FF": this.sysFf(); break;
                 default:
-                    _Kernel.krnTrace("Invalid, Terminating.");
                     _PCB.state = "Terminated";
+                    _Segments[_PCB.segment].ACTIVE = false;
+                    _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
                     break;
             }
         }
 
-        // CPU Operations
-        // Load Accumulator with a constant
-        public ldaA9(): void {
+        public ldaA9() {
             this.PC++;
             this.Acc = _MemoryAccessor.read(this.PC);
             this.PC++;
         }
 
-        // Load Accumulator from memory
-        public ldaAd(): void {
+        public ldaAd() {
             this.PC++;
-            this.Acc = _MemoryAccessor.read(this.littleEndian());
+            var hexinstert = _MemoryAccessor.read(this.littleEndian());
+            this.Acc = hexinstert;
             this.PC += 2;
         }
 
-        // Store Accumulator in memory
-        public sta8d(): void {
+        public sta8d() {
             this.PC++;
-            _MemoryAccessor.write(this.littleEndian(), this.Acc);
+            var accVal = this.Acc;
+            _MemoryAccessor.write(this.littleEndian(), accVal);
             this.PC += 2;
         }
 
-        // Add with carry
-        public adc6d(): void {
+        public adc6d() {
             this.PC++;
-            this.Acc += _MemoryAccessor.read(this.littleEndian());
+            var adder = _MemoryAccessor.read(this.littleEndian());
+            this.Acc += adder;
             this.PC += 2;
         }
 
-        // Load X register with a constant
-        public ldxA2(): void {
+        public ldxA2() {
             this.PC++;
             this.Xreg = _MemoryAccessor.read(this.PC);
             this.PC++;
         }
 
-        // Load X register from memory
-        public ldxAe(): void {
+        public ldxAe() {
             this.PC++;
-            this.Xreg = _MemoryAccessor.read(this.littleEndian());
+            var hexinstert = _MemoryAccessor.read(this.littleEndian());
+            this.Xreg = hexinstert;
             this.PC += 2;
         }
 
-        // Load Y register with a constant
-        public ldyA0(): void {
+        public ldyA0() {
             this.PC++;
             this.Yreg = _MemoryAccessor.read(this.PC);
             this.PC++;
         }
 
-        // Load Y register from memory
-        public ldyAc(): void {
+        public ldyAc() {
             this.PC++;
-            this.Yreg = _MemoryAccessor.read(this.littleEndian());
+            var hexinstert = _MemoryAccessor.read(this.littleEndian());
+            this.Yreg = hexinstert;
             this.PC += 2;
         }
 
-        // No operation
-        public nopEa(): void {
+        public nopEa() {
             this.PC++;
         }
 
-        // Break (halt execution)
-        public brk00(): void {
-            this.isExecuting = false;
-            _StdOut.advanceLine();
-            _StdOut.putText(">");
-            _CPU.init();
+        public brk00() {
+            _PCB.cycleEnd = _Cycle;
             _PCB.state = "Terminated";
+            _Segments[_PCB.segment].ACTIVE = false;
+            _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
+            let turnaround = _PCB.cycleEnd - _PCB.cycleStart;
+            let waittime = turnaround - _PCB.waitRun;
+            _PCB.turnAround = turnaround;
+            _PCB.waitTime = waittime;
+
+            if (_ReadyQueue.getSize() <= 1) {
+                for (let i = 0; i < _PCBList.length; i++) {
+                    if (_PCBList[i].state === "Terminated") {
+                        _StdOut.putText("PID: " + _PCBList[i].PID);
+                        _StdOut.advanceLine();
+                        _StdOut.putText("Turnaround Time: " + _PCBList[i].turnAround);
+                        _StdOut.advanceLine();
+                        _StdOut.putText("Wait Time: " + _PCBList[i].waitTime);
+                        _StdOut.advanceLine();
+                    }
+                }
+
+                _StdOut.advanceLine();
+                _StdOut.putText(">");
+                this.isExecuting = false;
+                _CPU.init();
+            }
         }
 
-        // Compare memory to X register, set Z flag if equal
-        public cpxEc(): void {
+        public cpxEc() {
             this.PC++;
-            const compare = _MemoryAccessor.read(this.littleEndian());
-            this.Zflag = this.Xreg === compare ? 1 : 0;
+            var compare = _MemoryAccessor.read(this.littleEndian());
+            this.Zflag = this.Xreg == compare ? 1 : 0;
             this.PC += 2;
         }
 
-        // Branch if Z flag is 0
-        public bneD0(): void {
+        public bneD0() {
             this.PC++;
             if (this.Zflag === 0) {
                 this.PC += _MemoryAccessor.read(this.PC) + 1;
-                if (this.PC > 255) this.PC -= 256;
+                if (this.PC > 255) {
+                    this.PC -= 256;
+                }
             } else {
                 this.PC++;
             }
         }
 
-        // Increment value in memory
-        public incEe(): void {
+        public incEe() {
             this.PC++;
-            const address = this.littleEndian();
-            const value = _MemoryAccessor.read(address);
+            let address = this.littleEndian();
+            let value = _MemoryAccessor.read(address);
             _MemoryAccessor.write(address, value + 1);
             this.PC += 2;
         }
 
-        // System call (print integer or string based on X register)
-        public sysFf(): void {
+        public sysFf() {
             this.PC++;
-            if (this.Xreg === 1) {
+            if (this.Xreg == 1) {
                 _StdOut.putText(this.Yreg.toString(16));
-            } else if (this.Xreg === 2) {
-                let address = this.Yreg;
-                while (_MemoryAccessor.read(address) !== 0x0) {
-                    _StdOut.putText(String.fromCharCode(_MemoryAccessor.read(address)));
-                    address++;
+            }
+            if (this.Xreg == 2) {
+                let yregHolder = this.Yreg;
+                while (_MemoryAccessor.read(yregHolder) != 0x0) {
+                    _StdOut.putText(String.fromCharCode(_MemoryAccessor.read(yregHolder)));
+                    yregHolder += 1;
                 }
             }
         }
 
-        public littleEndian(): number {
-            let address = _MemoryAccessor.read(this.PC);
-            address += 0x100 * _MemoryAccessor.read(this.PC + 1);
-            return address;
+        public killProg(pid: number) {
+            this.isExecuting = false;
         }
 
-        public killProg(pid: number): void {
-            this.isExecuting = false;
+        public littleEndian(): number {
+            let hexNum = _MemoryAccessor.read(this.PC);
+            hexNum += 0x100 * _MemoryAccessor.read(this.PC + 1);
+            return hexNum;
+        }
+
+        public savePCB() {
+            _PCB.PC = this.PC;
+            _PCB.Acc = this.Acc;
+            _PCB.IR = this.Ir;
+            _PCB.Xreg = this.Xreg;
+            _PCB.Yreg = this.Yreg;
+            _PCB.Zflag = this.Zflag;
+        }
+
+        public switch(newPCB: Pcb) {
+            this.savePCB();
+            _PCB = newPCB;
+            this.PC = newPCB.PC;
+            this.Acc = newPCB.Acc;
+            this.Ir = newPCB.IR;
+            this.Xreg = newPCB.Xreg;
+            this.Yreg = newPCB.Yreg;
+            this.Zflag = newPCB.Zflag;
         }
     }
 }

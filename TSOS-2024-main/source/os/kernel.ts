@@ -24,6 +24,15 @@
                 // Initialize the console.
                 _Console = new Console();             // The command line interface / console I/O device.
                 _Console.init();
+                _ReadyQueue = new Queue();
+
+                _Segments = new Array();
+                for (let i = 0; i < 3; i++) {
+                    _SEG = new Segment();
+                    _SEG.SEG = i;
+                    _SEG.ACTIVE = false;
+                    _Segments[i] = _SEG;
+                }
     
                 // Initialize standard input and output to the _Console.
                 _StdIn  = _Console;

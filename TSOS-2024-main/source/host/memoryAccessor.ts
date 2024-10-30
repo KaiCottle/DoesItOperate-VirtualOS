@@ -15,19 +15,19 @@ module TSOS {
         }
 
         // Write data to the specified memory address
-        public write(address: number, data: number) {
-            var addy = address + _PCB.base;
-            if ((_PCB.state === "Resident") || (_PCB.state === "Ready") || (_PCB.state === "Running")) {
-                if ((addy >= _PCB.base) && (addy <= _PCB.limit)) {
-                    _Memory.totalMemory[addy] = data;
-                    TSOS.Control.updateMemoryDisplay(addy);
-                }
-                else {
+        public write(address: number, data: number): void {
+            const add = address + _PCB.base;
+            const { base, limit, state, PID } = _PCB;
+            if (["Resident", "Ready", "Running"].includes(state)) {
+                if (add >= base && add <= limit) {
+                    _Memory.totalMemory[add] = data;
+                    TSOS.Control.updateMemoryDisplay(add);
+                } else {
                     _CPU.isExecuting = false;
-                    _StdOut.putText("OUT OF BOUNDS ERROR ON PID: " + (_PCB.PID));
+                    _StdOut.putText(`OUT OF BOUNDS ERROR ON PID: ${PID}`);
                     _OsShell.shellKill();
                 }
-            }//if state
+            }
         }
 
         public clearAll() {
@@ -38,14 +38,11 @@ module TSOS {
                 TSOS.Control.updateMemoryDisplay(m);
             }
             for (let j = 0; j < _PCBList.length; j++) {
-                console.log(_PCBList[j]);
                 _PCBList[j].state = "Terminated";
-                console.log(_PCBList[j]);
                 _Segments[_PCBList[j].segment].ACTIVE = false;
                 _MemoryManager.clearSegment(_PCBList[j].base, _PCBList[j].limit);
             }
-            Control.cpuTableUpdate;
-            Control.processTableUpdate;
+            this.updateTables();
         }
 
         public updateTables() {

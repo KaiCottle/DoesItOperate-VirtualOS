@@ -44,6 +44,23 @@ var TSOS;
             }
             return retVal;
         }
+        clearQueue() {
+            this.q.length = 0; //empty queue
+        }
+        removeQueue(pidRemove) {
+            var tempQueue = new Queue();
+            var tempItem;
+            for (let i = 0; i < _ReadyQueue.getSize(); i++) {
+                tempItem = _ReadyQueue.dequeue;
+                if (tempItem.pid == pidRemove) {
+                    _Kernel.krnTrace("Process removed by queue class");
+                }
+                else {
+                    tempQueue.enqueue(tempItem);
+                }
+            }
+            _ReadyQueue = tempQueue;
+        }
     }
     TSOS.Queue = Queue;
 })(TSOS || (TSOS = {}));

@@ -78,6 +78,7 @@ module TSOS {
             _Memory = new Memory();
             _Memory.init();
             _MemoryAccessor = new MemoryAccessor();
+            
 
             // Set the host clock pulse and start the kernel.
             _hardwareClockID = setInterval(Devices.hostClockPulse, CPU_CLOCK_INTERVAL);

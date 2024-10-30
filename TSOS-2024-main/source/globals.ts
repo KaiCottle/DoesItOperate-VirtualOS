@@ -29,12 +29,15 @@ const KEYBOARD_IRQ: number = 1;
 var _CPU: TSOS.Cpu;
 var _Memory: TSOS.Memory;
 var _MemoryAccessor: TSOS.MemoryAccessor; 
-var _MemoryManager: any	=	null;
+var _MemoryManager: TSOS.MemoryManager = null;
 
 var _PID: number = 0;
 var _PCB: TSOS.Pcb;
 var _PCBList = [];
 var _Segments = [];
+var _SEG: TSOS.Segment;
+var _Cycle: number = 0;
+var _PRQuantum = 6; 
 
 var _OSclock: number = 0;  // Page 23.
 
@@ -53,6 +56,9 @@ var _Kernel: TSOS.Kernel;
 var _KernelInterruptQueue: TSOS.Queue = null;
 var _KernelInputQueue: TSOS.Queue = null; 
 var _KernelBuffers = null; 
+
+var _ResidentList = []; //list of all resident processes 
+var _ReadyQueue: TSOS.Queue = null; 
 
 // Standard input and output
 var _StdIn:  TSOS.Console = null; 
