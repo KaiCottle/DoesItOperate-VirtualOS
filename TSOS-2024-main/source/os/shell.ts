@@ -97,6 +97,11 @@ module TSOS {
                 "<int> - Kill one process.");
             this.commandList[this.commandList.length] = sc;
 
+            sc = new ShellCommand(this.shellKillAll,
+                "killall",
+                "<killall> - Kill all processes.");
+            this.commandList[this.commandList.length] = sc;
+
             // shutdown
             sc = new ShellCommand(this.shellShutdown,
                                   "shutdown",
@@ -231,6 +236,7 @@ module TSOS {
         // Shell Command Functions. Kinda not part of Shell() class exactly, but
         // called from here, so kept here to avoid violating the law of least astonishment.
         //
+        
         public shellInvalidCommand() {
             _StdOut.putText("Invalid Command. ");
             if (_SarcasticMode) {
@@ -259,9 +265,6 @@ module TSOS {
               _StdOut.putText("For what?");
            }
         }
-
-        // Although args is unused in some of these functions, it is always provided in the 
-        // actual parameter list when this function is called, so I feel like we need it.
 
         public shellVer(args: string[]) {
             _StdOut.putText(APP_NAME + " version " + APP_VERSION);
@@ -415,46 +418,67 @@ module TSOS {
         }
 
         public shellKillOne(args: string[]) {
-    const pidInput = Number(args[0]);
-    const pcb = _PCBList.find(p => p.PID === pidInput); // Find the process by PID
+            const pidInput = Number(args[0]);
+            const pcb = _PCBList.find(p => p.PID === pidInput);
 
-    if (pcb) {
-        // Only terminate if the process is not already terminated
-        if (pcb.state === "Ready" || pcb.state === "Running" || pcb.state === "Resident") {
-            pcb.state = "Terminated";
-            _Segments[pcb.segment].ACTIVE = false;
-            _MemoryManager.clearSegment(pcb.base, pcb.limit);
+            if (pcb) {
+                // Only terminate if the process is not already terminated
+                if (pcb.state === "Ready" || pcb.state === "Running" || pcb.state === "Resident") {
+                    pcb.state = "Terminated";
+                    _Segments[pcb.segment].ACTIVE = false;
+                    _MemoryManager.clearSegment(pcb.base, pcb.limit);
 
-            // Display termination message
-            _StdOut.putText(`TERMINATED PROCESS: ${pcb.PID}`);
-            _StdOut.advanceLine();
+                    _StdOut.putText(`TERMINATED PROCESS: ${pcb.PID}`);
+                    _StdOut.advanceLine();
 
-            // Calculate turnaround and wait times
-            pcb.turnAround = pcb.cycleEnd - pcb.cycleStart;
-            pcb.waitTime = Math.max(0, pcb.turnAround - pcb.waitRun);
+                    // Calculate turnaround and wait times
+                    pcb.turnAround = pcb.cycleEnd - pcb.cycleStart;
+                    pcb.waitTime = Math.max(0, pcb.turnAround - pcb.waitRun);
 
-            // Stop CPU execution if the terminated process was the one running
-            if (_CPU.isExecuting && _PCB === pcb) {
-                _CPU.isExecuting = false;
-                _CPU.init();
-                _StdOut.putText("CPU execution stopped as the current process was terminated.");
+                    if (_CPU.isExecuting && _PCB === pcb) {
+                        _CPU.isExecuting = false;
+                        _CPU.init();
+                        _StdOut.putText("CPU execution stopped as the current process was terminated.");
+                        _StdOut.advanceLine();
+                    }
+                } else {
+                    _StdOut.putText(`Process ${pidInput} is already terminated.`);
+                    _StdOut.advanceLine();
+                }
+            } else {
+                _StdOut.putText("ERROR - INVALID PID");
                 _StdOut.advanceLine();
             }
-        } else {
-            _StdOut.putText(`Process ${pidInput} is already terminated.`);
+            _MemoryAccessor.updateTables();
+        }
+
+        public shellKillAll(): void {
+            if (_CPU.isExecuting) {
+                _CPU.isExecuting = false;
+                _CPU.init();
+                _StdOut.putText("CPU execution stopped.");
+                _StdOut.advanceLine();
+            }
+        
+            for (let i = 0; i < _PCBList.length; i++) {
+                const pcb = _PCBList[i];
+        
+                // Only terminate processes that are not already terminated
+                if (pcb.state !== "Terminated") {
+                    pcb.state = "Terminated";
+                    _Segments[pcb.segment].ACTIVE = false;
+                    _MemoryManager.clearSegment(pcb.base, pcb.limit);
+        
+                    _StdOut.putText(`PROCESS ${pcb.PID} terminated.`);
+                    _StdOut.advanceLine();
+                }
+            }
+        
+            _MemoryAccessor.updateTables();
+            _StdOut.putText("All processes have been terminated.");
             _StdOut.advanceLine();
         }
-    } else {
-        _StdOut.putText("ERROR - INVALID PID");
-        _StdOut.advanceLine();
-    }
-
-    // Update the memory table display
-    _MemoryAccessor.updateTables();
-}
-
         
-
         public shellKill() {
             var curPid = _PCB.PID;
             _CPU.killProg(curPid);
@@ -539,6 +563,15 @@ module TSOS {
                         break;
                     case "runall":
                         _StdOut.putText("<runAll> - Execute all programs at once.")
+                        break;
+                    case "ps":
+                        _StdOut.putText("<ps> - Display the PID and state of all processes.")
+                        break;
+                    case "killone":
+                        _StdOut.putText("<int> - Kill one process.")
+                        break;
+                    case "killall":
+                        _StdOut.putText("<killAll> - Kill all processes.")
                         break;
                     case "help":
                         _StdOut.putText("Displays a list of available commands.");

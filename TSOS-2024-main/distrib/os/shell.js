@@ -58,6 +58,8 @@ var TSOS;
             this.commandList[this.commandList.length] = sc;
             sc = new TSOS.ShellCommand(this.shellKillOne, "killone", "<int> - Kill one process.");
             this.commandList[this.commandList.length] = sc;
+            sc = new TSOS.ShellCommand(this.shellKillAll, "killall", "<killall> - Kill all processes.");
+            this.commandList[this.commandList.length] = sc;
             // shutdown
             sc = new TSOS.ShellCommand(this.shellShutdown, "shutdown", "- Shuts down the virtual OS but leaves the underlying host / hardware simulation running.");
             this.commandList[this.commandList.length] = sc;
@@ -325,20 +327,18 @@ var TSOS;
         }
         shellKillOne(args) {
             const pidInput = Number(args[0]);
-            const pcb = _PCBList.find(p => p.PID === pidInput); // Find the process by PID
+            const pcb = _PCBList.find(p => p.PID === pidInput);
             if (pcb) {
                 // Only terminate if the process is not already terminated
                 if (pcb.state === "Ready" || pcb.state === "Running" || pcb.state === "Resident") {
                     pcb.state = "Terminated";
                     _Segments[pcb.segment].ACTIVE = false;
                     _MemoryManager.clearSegment(pcb.base, pcb.limit);
-                    // Display termination message
                     _StdOut.putText(`TERMINATED PROCESS: ${pcb.PID}`);
                     _StdOut.advanceLine();
                     // Calculate turnaround and wait times
                     pcb.turnAround = pcb.cycleEnd - pcb.cycleStart;
                     pcb.waitTime = Math.max(0, pcb.turnAround - pcb.waitRun);
-                    // Stop CPU execution if the terminated process was the one running
                     if (_CPU.isExecuting && _PCB === pcb) {
                         _CPU.isExecuting = false;
                         _CPU.init();
@@ -355,8 +355,29 @@ var TSOS;
                 _StdOut.putText("ERROR - INVALID PID");
                 _StdOut.advanceLine();
             }
-            // Update the memory table display
             _MemoryAccessor.updateTables();
+        }
+        shellKillAll() {
+            if (_CPU.isExecuting) {
+                _CPU.isExecuting = false;
+                _CPU.init();
+                _StdOut.putText("CPU execution stopped.");
+                _StdOut.advanceLine();
+            }
+            for (let i = 0; i < _PCBList.length; i++) {
+                const pcb = _PCBList[i];
+                // Only terminate processes that are not already terminated
+                if (pcb.state !== "Terminated") {
+                    pcb.state = "Terminated";
+                    _Segments[pcb.segment].ACTIVE = false;
+                    _MemoryManager.clearSegment(pcb.base, pcb.limit);
+                    _StdOut.putText(`PROCESS ${pcb.PID} terminated.`);
+                    _StdOut.advanceLine();
+                }
+            }
+            _MemoryAccessor.updateTables();
+            _StdOut.putText("All processes have been terminated.");
+            _StdOut.advanceLine();
         }
         shellKill() {
             var curPid = _PCB.PID;
