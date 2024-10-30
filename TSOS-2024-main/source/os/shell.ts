@@ -87,6 +87,11 @@ module TSOS {
                 "<runall> - Execute all programs at once.");
             this.commandList[this.commandList.length] = sc;
 
+            sc = new ShellCommand(this.shellPs,
+                "ps",
+                "<ps> - Display the PID and state of all processes.");
+            this.commandList[this.commandList.length] = sc;
+
             // shutdown
             sc = new ShellCommand(this.shellShutdown,
                                   "shutdown",
@@ -391,8 +396,18 @@ module TSOS {
                 _MemoryAccessor.updateTables();
             }
         }
-        
-        
+
+        public shellPs() {
+            if (_PCBList.length > 0) {
+                _PCBList.forEach(pcb => {
+                    _StdOut.putText(`PID: ${pcb.PID} | STATE: ${pcb.state}`);
+                    _StdOut.advanceLine();
+                });
+            } else {
+                _StdOut.putText("No processes currently loaded.");
+                _StdOut.advanceLine();
+            }
+        }
 
         public shellKill() {
             var curPid = _PCB.PID;

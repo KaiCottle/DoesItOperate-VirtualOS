@@ -54,6 +54,8 @@ var TSOS;
             //runall
             sc = new TSOS.ShellCommand(this.shellRunAll, "runall", "<runall> - Execute all programs at once.");
             this.commandList[this.commandList.length] = sc;
+            sc = new TSOS.ShellCommand(this.shellPs, "ps", "<ps> - Display the PID and state of all processes.");
+            this.commandList[this.commandList.length] = sc;
             // shutdown
             sc = new TSOS.ShellCommand(this.shellShutdown, "shutdown", "- Shuts down the virtual OS but leaves the underlying host / hardware simulation running.");
             this.commandList[this.commandList.length] = sc;
@@ -291,7 +293,7 @@ var TSOS;
                 _StdOut.advanceLine();
             }
             else {
-                _ReadyQueue.clearQueue(); // Clear the ready queue initially
+                _ReadyQueue.clearQueue();
                 // Set all "Resident" processes to "Ready" state and enqueue them
                 for (let pcb of _PCBList) {
                     if (pcb.state === "Resident") {
@@ -300,11 +302,23 @@ var TSOS;
                     }
                 }
                 if (_ReadyQueue.getSize() > 0) {
-                    _PCB = _ReadyQueue.dequeue(); // Set the first process to run
-                    _CPU.isExecuting = true; // Set CPU as executing
-                    _PCB.state = "Executing"; // Update process state
+                    _PCB = _ReadyQueue.dequeue();
+                    _CPU.isExecuting = true;
+                    _PCB.state = "Executing";
                 }
-                _MemoryAccessor.updateTables(); // Update memory table display
+                _MemoryAccessor.updateTables();
+            }
+        }
+        shellPs() {
+            if (_PCBList.length > 0) {
+                _PCBList.forEach(pcb => {
+                    _StdOut.putText(`PID: ${pcb.PID} | STATE: ${pcb.state}`);
+                    _StdOut.advanceLine();
+                });
+            }
+            else {
+                _StdOut.putText("No processes currently loaded.");
+                _StdOut.advanceLine();
             }
         }
         shellKill() {
@@ -377,6 +391,15 @@ var TSOS;
                         break;
                     case "load":
                         _StdOut.putText("<load> - Validates previous input, only hex digits and spaces allowed.");
+                        break;
+                    case "run":
+                        _StdOut.putText("<pid> - Run a program already in memory.");
+                        break;
+                    case "clearmem":
+                        _StdOut.putText("<clearMem> - Clear all memory partitions.");
+                        break;
+                    case "runall":
+                        _StdOut.putText("<runAll> - Execute all programs at once.");
                         break;
                     case "help":
                         _StdOut.putText("Displays a list of available commands.");
