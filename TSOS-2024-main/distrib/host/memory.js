@@ -2,22 +2,21 @@ var TSOS;
 (function (TSOS) {
     // Represents the memory of the host system
     class Memory {
-        segment0;
-        segment1;
-        segment2;
+        totalMemory;
         memory = [];
-        constructor(segment0_ = new Array(256), segment1_ = new Array(256), segment2_ = new Array(256)) {
-            this.segment0 = segment0_;
-            this.segment1 = segment1_;
-            this.segment2 = segment2_;
-            this.init();
+        seg0Base = 0;
+        seg0Limit = 255;
+        seg1Base = 256;
+        seg1Limit = 511;
+        seg2Base = 512;
+        seg2Limit = 767;
+        constructor(totalMemory_ = new Array(768)) {
+            this.totalMemory = totalMemory_;
         }
         // Initialize memory segments to 0x00
         init() {
-            for (let i = 0; i < 256; i++) {
-                this.segment0[i] = 0x00;
-                this.segment1[i] = 0x00;
-                this.segment2[i] = 0x00;
+            for (let i = 0; i < 768; i++) {
+                this.totalMemory[i] = 0x00;
             }
         }
         // Returns a hex string of a number, padded to a given length

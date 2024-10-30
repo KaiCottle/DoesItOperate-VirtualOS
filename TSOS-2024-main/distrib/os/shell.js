@@ -48,6 +48,9 @@ var TSOS;
             // run
             sc = new TSOS.ShellCommand(this.shellRun, "run", "run <pid>, runs the specified program.");
             this.commandList[this.commandList.length] = sc;
+            //clear
+            sc = new TSOS.ShellCommand(this.shellClearMem, "clearmem", "<clearmem> - Clear all memory segments.");
+            this.commandList[this.commandList.length] = sc;
             // shutdown
             sc = new TSOS.ShellCommand(this.shellShutdown, "shutdown", "- Shuts down the virtual OS but leaves the underlying host / hardware simulation running.");
             this.commandList[this.commandList.length] = sc;
@@ -238,7 +241,6 @@ var TSOS;
                 for (let m = 0; m < text.length; m += 2) {
                     userInputArray.push(text[m] + text[m + 1]);
                 }
-                console.log("shell log test: " + userInputArray);
                 _PCB = new TSOS.Pcb();
                 _PCB.init();
                 _PCB.PID = _PID;
@@ -275,12 +277,30 @@ var TSOS;
             TSOS.Control.processTableUpdate();
             TSOS.Control.cpuTableUpdate();
         }
+        shellClearMem() {
+            if (_CPU.isExecuting) {
+                _StdOut.putText("Cannot clear memory while CPU is executing.");
+            }
+            else {
+                _MemoryAccessor.clearAll();
+            }
+        }
+        shellKill() {
+            var curPid = _PCB.PID;
+            _CPU.killProg(curPid);
+            _PCB.state = "Terminated";
+            _Segments[_PCB.segment].ACTIVE = false;
+            _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
+            _MemoryAccessor.updateTables();
+            _StdOut.advanceLine();
+            _OsShell.putPrompt();
+        }
         shellStatus(args) {
             if (args.length > 0) {
                 const status = args.join(' ');
                 const statusElement = document.getElementById("status");
                 if (statusElement) {
-                    statusElement.innerHTML = "Status: " + status; // Updates the HTML
+                    statusElement.innerHTML = "Status: " + status;
                     _StdOut.putText("Status set to: " + status);
                 }
                 else {
@@ -315,7 +335,6 @@ var TSOS;
                     case "help":
                         _StdOut.putText("Help displays a list of (hopefully) valid commands.");
                         break;
-                    // TODO: Make descriptive MANual page entries for the rest of the shell commands here.
                     case "ver":
                         _StdOut.putText("Displays the current version data.");
                         break;
@@ -393,7 +412,6 @@ var TSOS;
         }
         shellRot13(args) {
             if (args.length > 0) {
-                // Requires Utils.ts for rot13() function.
                 _StdOut.putText(args.join(' ') + " = '" + TSOS.Utils.rot13(args.join(' ')) + "'");
             }
             else {

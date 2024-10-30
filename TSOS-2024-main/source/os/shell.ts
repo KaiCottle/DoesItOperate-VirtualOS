@@ -74,6 +74,12 @@ module TSOS {
                 "run",
                 "run <pid>, runs the specified program.");
             this.commandList[this.commandList.length] = sc;
+            
+            //clear
+            sc = new ShellCommand(this.shellClearMem,
+                "clearmem",
+                "<clearmem> - Clear all memory segments.");
+            this.commandList[this.commandList.length] = sc;
 
             // shutdown
             sc = new ShellCommand(this.shellShutdown,
@@ -340,7 +346,26 @@ module TSOS {
             Control.cpuTableUpdate();
         }
 
-        
+        public shellClearMem() {
+            if (_CPU.isExecuting) {
+                _StdOut.putText("Cannot clear memory while CPU is executing.")
+            }
+            else {
+                _MemoryAccessor.clearAll();
+            }
+        }
+
+        public shellKill() {
+            var curPid = _PCB.PID;
+            _CPU.killProg(curPid);
+            _PCB.state = "Terminated";
+            _Segments[_PCB.segment].ACTIVE = false;
+            _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
+            _MemoryAccessor.updateTables();
+            
+            _StdOut.advanceLine();
+            _OsShell.putPrompt();
+        }
         
         public shellStatus(args: string[]) {
             if (args.length > 0) {

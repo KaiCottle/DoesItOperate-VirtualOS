@@ -210,7 +210,6 @@ var TSOS;
                 }
             }
         }
-        // Helper Methods
         littleEndian() {
             let address = _MemoryAccessor.read(this.PC);
             address += 0x100 * _MemoryAccessor.read(this.PC + 1);

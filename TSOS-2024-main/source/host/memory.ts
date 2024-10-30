@@ -2,29 +2,25 @@ module TSOS {
     // Represents the memory of the host system
     export class Memory {
 
-        segment0: any[];
-        segment1: any[];
-        segment2: any[];
+        totalMemory: number[];
 
         public memory: string[] = [];
 
-        constructor(
-            segment0_ = new Array(256),
-            segment1_ = new Array(256),
-            segment2_ = new Array(256)
-        ) {
-            this.segment0 = segment0_;
-            this.segment1 = segment1_;
-            this.segment2 = segment2_;
-            this.init();
-        }
+        public seg0Base: number = 0;
+        public seg0Limit: number = 255;
+        public seg1Base: number = 256;
+        public seg1Limit: number = 511;
+        public seg2Base: number = 512;
+        public seg2Limit: number = 767;
+
+        constructor(totalMemory_ = new Array(768)) {
+            this.totalMemory = totalMemory_;
+       }
 
         // Initialize memory segments to 0x00
         public init(): void {
-            for (let i = 0; i < 256; i++) {
-                this.segment0[i] = 0x00;
-                this.segment1[i] = 0x00;
-                this.segment2[i] = 0x00;
+            for (let i = 0; i < 768; i++) {
+                this.totalMemory[i] = 0x00;
             }
         }
 

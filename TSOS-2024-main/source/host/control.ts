@@ -49,7 +49,7 @@ module TSOS {
 
             const mem = document.getElementById(Address);
             if (mem) {
-                const addressInsert = _Memory.segment0[address];
+                const addressInsert = _Memory.totalMemory[address];
                 mem.innerText = addressInsert.toString(16).padStart(2, '0').toUpperCase();
             }
         }

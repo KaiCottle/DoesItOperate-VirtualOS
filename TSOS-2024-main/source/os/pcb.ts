@@ -12,7 +12,10 @@ module TSOS {
             public Zflag: number = 0,    // Zero flag
             public priority: number = 0, // Priority level
             public state: string = "",   // Process state (New, Running, Waiting, Terminated, etc.)
-            public location: string = "" // Location in memory (Memory, Disk, etc.)
+            public location: string = "", // Location in memory (Memory, Disk, etc.)
+            public base: number = 0,
+            public limit: number = 255,
+            public segment: number = 0,
         ) {}
 
         // Initialize the PCB with default values
@@ -27,6 +30,9 @@ module TSOS {
             this.priority = 0;         // Default priority is 0
             this.state = "New";        // Initial state is "New"
             this.location = "Memory";  // Default location is "Memory"
+            this.base = 0;
+            this.limit = 255;
+            this.segment = 0;
         }
     }
 }
