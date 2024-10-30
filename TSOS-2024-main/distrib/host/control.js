@@ -81,27 +81,36 @@ var TSOS;
         }
         // Update the process table
         static processTableUpdate() {
-            const { PC, Ir, Acc, Xreg, Yreg, Zflag } = _CPU;
-            const pcb = _PCBList[_PID - 1];
-            const { PID, priority, state, location } = pcb;
             // Check if processTable element exists
             const processTable = document.getElementById("processTable");
             if (!processTable)
                 return;
-            // Clear the table and update with new values
+            // Clear the table before updating with new values
             processTable.innerHTML = "";
-            const row = document.createElement("tr");
-            // List of values to update
-            const values = [
-                PID, PC, Ir, Acc, Xreg, Yreg, Zflag,
-                priority, state, location
-            ].map(v => v.toString());
-            values.forEach(value => {
-                const td = document.createElement("td");
-                td.innerHTML = value;
-                row.appendChild(td);
+            _PCBList.forEach(pcb => {
+                // If the PCB is the currently running process, use CPU values; otherwise, use PCB values
+                const isCurrentProcess = pcb === _PCB;
+                const PC = isCurrentProcess ? _CPU.PC : pcb.PC;
+                const Ir = isCurrentProcess ? _CPU.Ir : pcb.IR;
+                const Acc = isCurrentProcess ? _CPU.Acc : pcb.Acc;
+                const Xreg = isCurrentProcess ? _CPU.Xreg : pcb.Xreg;
+                const Yreg = isCurrentProcess ? _CPU.Yreg : pcb.Yreg;
+                const Zflag = isCurrentProcess ? _CPU.Zflag : pcb.Zflag;
+                const { PID, priority, state, location } = pcb;
+                // Create a new row for each process
+                const row = document.createElement("tr");
+                // List of values to populate each cell
+                const values = [
+                    PID, PC, Ir, Acc, Xreg, Yreg, Zflag,
+                    priority, state, location
+                ].map(v => v.toString());
+                values.forEach(value => {
+                    const td = document.createElement("td");
+                    td.textContent = value;
+                    row.appendChild(td);
+                });
+                processTable.appendChild(row);
             });
-            processTable.appendChild(row);
         }
         // Update the CPU table, same logic as process table but for CPU
         static cpuTableUpdate() {
