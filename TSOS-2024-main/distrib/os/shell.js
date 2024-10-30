@@ -48,8 +48,11 @@ var TSOS;
             // run
             sc = new TSOS.ShellCommand(this.shellRun, "run", "run <pid>, runs the specified program.");
             this.commandList[this.commandList.length] = sc;
-            //clear
+            //clearmem
             sc = new TSOS.ShellCommand(this.shellClearMem, "clearmem", "<clearmem> - Clear all memory segments.");
+            this.commandList[this.commandList.length] = sc;
+            //runall
+            sc = new TSOS.ShellCommand(this.shellRunAll, "runall", "<runall> - Execute all programs at once.");
             this.commandList[this.commandList.length] = sc;
             // shutdown
             sc = new TSOS.ShellCommand(this.shellShutdown, "shutdown", "- Shuts down the virtual OS but leaves the underlying host / hardware simulation running.");
@@ -280,6 +283,28 @@ var TSOS;
             }
             else {
                 _MemoryAccessor.clearAll();
+            }
+        }
+        shellRunAll() {
+            if (_CPU.isExecuting) {
+                _StdOut.putText("Unable to run task while CPU is in execution.");
+                _StdOut.advanceLine();
+            }
+            else {
+                _ReadyQueue.clearQueue(); // Clear the ready queue initially
+                // Set all "Resident" processes to "Ready" state and enqueue them
+                for (let pcb of _PCBList) {
+                    if (pcb.state === "Resident") {
+                        pcb.state = "Ready";
+                        _ReadyQueue.enqueue(pcb); // Enqueue each ready process directly
+                    }
+                }
+                if (_ReadyQueue.getSize() > 0) {
+                    _PCB = _ReadyQueue.dequeue(); // Set the first process to run
+                    _CPU.isExecuting = true; // Set CPU as executing
+                    _PCB.state = "Executing"; // Update process state
+                }
+                _MemoryAccessor.updateTables(); // Update memory table display
             }
         }
         shellKill() {

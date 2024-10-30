@@ -1,17 +1,4 @@
-/* ------------
- CPU.ts
-
- Routines for the host CPU simulation, NOT for the OS itself.
- In this manner, it's A LITTLE BIT like a hypervisor,
- in that the Document environment inside a browser is the "bare metal" (so to speak) for which we write code
- that hosts our client OS. But that analogy only goes so far, and the lines are blurred, because we are using
- TypeScript/JavaScript in both the host and client environments.
-
- This code references page numbers in the text book:
- Operating System Concepts 8th edition by Silberschatz, Galvin, and Gagne.  ISBN 978-0-470-12872-5
- ------------ */
-
- module TSOS {
+module TSOS {
     export class Cpu {
         public low: number;
         public hi: number;
@@ -46,6 +33,19 @@
                 _MemoryAccessor.updateTables();
                 _Cycle++;
                 _PCB.waitRun++;
+
+                // Check if the current process has terminated after the cycle
+                if (_PCB.state === "Terminated") {
+                    if (_ReadyQueue.getSize() > 0) {
+                        // Load the next process from the Ready Queue
+                        _PCB = _ReadyQueue.dequeue();
+                        _PCB.state = "Executing";
+                        this.loadPCB(_PCB);
+                    } else {
+                        // Stop execution if no processes remain
+                        this.isExecuting = false;
+                    }
+                }
             }
         }
 
@@ -144,23 +144,24 @@
             _PCB.state = "Terminated";
             _Segments[_PCB.segment].ACTIVE = false;
             _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
-            let turnaround = _PCB.cycleEnd - _PCB.cycleStart;
-            let waittime = turnaround - _PCB.waitRun;
-            _PCB.turnAround = turnaround;
-            _PCB.waitTime = waittime;
+            _PCB.turnAround = _PCB.cycleEnd - _PCB.cycleStart;
+            _PCB.waitTime = _PCB.turnAround - _PCB.waitRun;
 
-            if (_ReadyQueue.getSize() <= 1) {
-                for (let i = 0; i < _PCBList.length; i++) {
-                    if (_PCBList[i].state === "Terminated") {
-                        _StdOut.putText("PID: " + _PCBList[i].PID);
-                        _StdOut.advanceLine();
-                        _StdOut.putText("Turnaround Time: " + _PCBList[i].turnAround);
-                        _StdOut.advanceLine();
-                        _StdOut.putText("Wait Time: " + _PCBList[i].waitTime);
-                        _StdOut.advanceLine();
-                    }
-                }
+            // Display turnaround and wait times
+            _StdOut.putText("PID: " + _PCB.PID);
+            _StdOut.advanceLine();
+            _StdOut.putText("Turnaround Time: " + _PCB.turnAround);
+            _StdOut.advanceLine();
+            _StdOut.putText("Wait Time: " + _PCB.waitTime);
+            _StdOut.advanceLine();
 
+            if (_ReadyQueue.getSize() > 0) {
+                // Move to the next process if there are more in the queue
+                _PCB = _ReadyQueue.dequeue();
+                _PCB.state = "Executing";
+                this.loadPCB(_PCB);
+            } else {
+                // Stop execution if no processes remain
                 _StdOut.advanceLine();
                 _StdOut.putText(">");
                 this.isExecuting = false;
@@ -228,15 +229,19 @@
             _PCB.Zflag = this.Zflag;
         }
 
+        public loadPCB(pcb: Pcb): void {
+            this.PC = pcb.PC;
+            this.Acc = pcb.Acc;
+            this.Ir = pcb.IR;
+            this.Xreg = pcb.Xreg;
+            this.Yreg = pcb.Yreg;
+            this.Zflag = pcb.Zflag;
+        }
+
         public switch(newPCB: Pcb) {
             this.savePCB();
             _PCB = newPCB;
-            this.PC = newPCB.PC;
-            this.Acc = newPCB.Acc;
-            this.Ir = newPCB.IR;
-            this.Xreg = newPCB.Xreg;
-            this.Yreg = newPCB.Yreg;
-            this.Zflag = newPCB.Zflag;
+            this.loadPCB(_PCB);
         }
     }
 }

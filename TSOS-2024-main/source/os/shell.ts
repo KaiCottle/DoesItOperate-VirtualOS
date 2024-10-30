@@ -75,10 +75,16 @@ module TSOS {
                 "run <pid>, runs the specified program.");
             this.commandList[this.commandList.length] = sc;
             
-            //clear
+            //clearmem
             sc = new ShellCommand(this.shellClearMem,
                 "clearmem",
                 "<clearmem> - Clear all memory segments.");
+            this.commandList[this.commandList.length] = sc;
+            
+            //runall
+            sc = new ShellCommand(this.shellRunAll,
+                "runall",
+                "<runall> - Execute all programs at once.");
             this.commandList[this.commandList.length] = sc;
 
             // shutdown
@@ -361,6 +367,33 @@ module TSOS {
             }
         }
 
+        public shellRunAll() {
+            if (_CPU.isExecuting) {
+                _StdOut.putText("Unable to run task while CPU is in execution.");
+                _StdOut.advanceLine();
+            } else {
+                _ReadyQueue.clearQueue();
+        
+                // Set all "Resident" processes to "Ready" state and enqueue them
+                for (let pcb of _PCBList) {
+                    if (pcb.state === "Resident") {
+                        pcb.state = "Ready";
+                        _ReadyQueue.enqueue(pcb); // Enqueue each ready process directly
+                    }
+                }
+        
+                if (_ReadyQueue.getSize() > 0) {
+                    _PCB = _ReadyQueue.dequeue();
+                    _CPU.isExecuting = true;
+                    _PCB.state = "Executing";
+                }
+        
+                _MemoryAccessor.updateTables();
+            }
+        }
+        
+        
+
         public shellKill() {
             var curPid = _PCB.PID;
             _CPU.killProg(curPid);
@@ -436,6 +469,15 @@ module TSOS {
                         break;
                     case "load":
                         _StdOut.putText("<load> - Validates previous input, only hex digits and spaces allowed.")
+                        break;
+                    case "run":
+                        _StdOut.putText("<pid> - Run a program already in memory.")
+                        break;
+                    case "clearmem":
+                        _StdOut.putText("<clearMem> - Clear all memory partitions.")
+                        break;
+                    case "runall":
+                        _StdOut.putText("<runAll> - Execute all programs at once.")
                         break;
                     case "help":
                         _StdOut.putText("Displays a list of available commands.");
