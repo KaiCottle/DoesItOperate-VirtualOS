@@ -78,6 +78,8 @@ module TSOS {
             _Memory = new Memory();
             _Memory.init();
             _MemoryAccessor = new MemoryAccessor();
+            _Scheduler = new Scheduler();
+            _Dispatcher = new Dispatcher();
             
 
             // Set the host clock pulse and start the kernel.

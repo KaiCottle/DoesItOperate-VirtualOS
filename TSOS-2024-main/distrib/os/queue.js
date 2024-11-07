@@ -1,12 +1,3 @@
-/* ------------
-   Queue.ts
-
-   A simple Queue, which is really just a dressed-up JavaScript Array.
-   See the JavaScript Array documentation at
-   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
-   Look at the push and shift methods, as they are the least obvious here.
-
-   ------------ */
 var TSOS;
 (function (TSOS) {
     class Queue {
@@ -33,7 +24,7 @@ var TSOS;
         removeLast() {
             var retVal = null;
             if (this.q.length > 0) {
-                retVal = this.q.pop(); // Removes the last item -> ChatGPT suggested this... my stack knowledge is rusty
+                retVal = this.q.pop();
             }
             return retVal;
         }
@@ -45,7 +36,7 @@ var TSOS;
             return retVal;
         }
         clearQueue() {
-            this.q.length = 0; //empty queue
+            this.q.length = 0;
         }
         removeQueue(pidRemove) {
             var tempQueue = new Queue();

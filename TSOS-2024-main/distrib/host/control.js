@@ -67,6 +67,8 @@ var TSOS;
             _Memory = new TSOS.Memory();
             _Memory.init();
             _MemoryAccessor = new TSOS.MemoryAccessor();
+            _Scheduler = new TSOS.Scheduler();
+            _Dispatcher = new TSOS.Dispatcher();
             // Set the host clock pulse and start the kernel.
             _hardwareClockID = setInterval(TSOS.Devices.hostClockPulse, CPU_CLOCK_INTERVAL);
             _Kernel = new TSOS.Kernel();
@@ -81,14 +83,12 @@ var TSOS;
         }
         // Update the process table
         static processTableUpdate() {
-            // Check if processTable element exists
             const processTable = document.getElementById("processTable");
             if (!processTable)
                 return;
-            // Clear the table before updating with new values
             processTable.innerHTML = "";
             _PCBList.forEach(pcb => {
-                // If the PCB is the currently running process, use CPU values; otherwise, use PCB values
+                // If the PCB is the currently running process, use CPU values else use PCB values
                 const isCurrentProcess = pcb === _PCB;
                 const PC = isCurrentProcess ? _CPU.PC : pcb.PC;
                 const Ir = isCurrentProcess ? _CPU.Ir : pcb.IR;
@@ -97,9 +97,8 @@ var TSOS;
                 const Yreg = isCurrentProcess ? _CPU.Yreg : pcb.Yreg;
                 const Zflag = isCurrentProcess ? _CPU.Zflag : pcb.Zflag;
                 const { PID, priority, state, location } = pcb;
-                // Create a new row for each process
                 const row = document.createElement("tr");
-                // List of values to populate each cell
+                // List of all values to update in the table
                 const values = [
                     PID, PC, Ir, Acc, Xreg, Yreg, Zflag,
                     priority, state, location

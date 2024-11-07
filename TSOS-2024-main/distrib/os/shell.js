@@ -60,6 +60,8 @@ var TSOS;
             this.commandList[this.commandList.length] = sc;
             sc = new TSOS.ShellCommand(this.shellKillAll, "killall", "<killall> - Kill all processes.");
             this.commandList[this.commandList.length] = sc;
+            sc = new TSOS.ShellCommand(this.shellQuantum, "quantum", "<int> - Enter an integer to set Round Robin quantum (measured in cpu cycles).");
+            this.commandList[this.commandList.length] = sc;
             // shutdown
             sc = new TSOS.ShellCommand(this.shellShutdown, "shutdown", "- Shuts down the virtual OS but leaves the underlying host / hardware simulation running.");
             this.commandList[this.commandList.length] = sc;
@@ -165,10 +167,7 @@ var TSOS;
             }
             return retVal;
         }
-        //
-        // Shell Command Functions. Kinda not part of Shell() class exactly, but
-        // called from here, so kept here to avoid violating the law of least astonishment.
-        //
+        // Shell Command Functions
         shellInvalidCommand() {
             _StdOut.putText("Invalid Command. ");
             if (_SarcasticMode) {
@@ -296,17 +295,21 @@ var TSOS;
             }
             else {
                 _ReadyQueue.clearQueue();
-                // Set all "Resident" processes to "Ready" state and enqueue them
-                for (let pcb of _PCBList) {
-                    if (pcb.state === "Resident") {
-                        pcb.state = "Ready";
-                        _ReadyQueue.enqueue(pcb); // Enqueue each ready process directly
+                for (let incrementer = 0; incrementer < _PCBList.length; incrementer++) {
+                    if (_PCBList[incrementer].state === "Resident") {
+                        _PCBList[incrementer].state = "Ready";
                     }
                 }
-                if (_ReadyQueue.getSize() > 0) {
+                _ReadyQueue.clearQueue();
+                for (let i = 0; i < _PCBList.length; i++) {
+                    if (_PCBList[i].state === "Ready") {
+                        _ReadyQueue.enqueue(_PCBList[i]);
+                    }
+                }
+                if (!_CPU.isExecuting) {
                     _PCB = _ReadyQueue.dequeue();
+                    _ReadyQueue.enqueue(_PCB);
                     _CPU.isExecuting = true;
-                    _PCB.state = "Executing";
                 }
                 _MemoryAccessor.updateTables();
             }
@@ -376,6 +379,14 @@ var TSOS;
             _MemoryAccessor.updateTables();
             _StdOut.putText("All processes have been terminated.");
             _StdOut.advanceLine();
+        }
+        shellQuantum(args) {
+            if (Number(args[0]) > 0) {
+                _PRQuantum = parseInt(args[0]);
+            }
+            else {
+                _StdOut.putText("< 0");
+            }
         }
         shellKill() {
             var curPid = _PCB.PID;
@@ -465,6 +476,9 @@ var TSOS;
                         break;
                     case "killall":
                         _StdOut.putText("<killAll> - Kill all processes.");
+                        break;
+                    case "quantum":
+                        _StdOut.putText("<int> - Enter an integer to set Round Robin quantum (measured in cpu cycles).");
                         break;
                     case "help":
                         _StdOut.putText("Displays a list of available commands.");
