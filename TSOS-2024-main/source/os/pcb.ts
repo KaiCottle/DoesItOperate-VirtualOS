@@ -1,5 +1,5 @@
 module TSOS {
-    //I used chat gpt for all these comments and to make my init function.
+    //I used chat gpt for all these comments
     export class Pcb {
         constructor(
             public PID: number = 0,             // Process ID

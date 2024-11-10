@@ -289,30 +289,18 @@ var TSOS;
             }
         }
         shellRunAll() {
-            if (_CPU.isExecuting) {
-                _StdOut.putText("Unable to run task while CPU is in execution.");
-                _StdOut.advanceLine();
+            for (const pcb of _PCBList) {
+                if (pcb.state === "Resident") {
+                    pcb.state = "Ready";
+                    _ReadyQueue.enqueue(pcb);
+                }
             }
-            else {
-                _ReadyQueue.clearQueue();
-                for (let incrementer = 0; incrementer < _PCBList.length; incrementer++) {
-                    if (_PCBList[incrementer].state === "Resident") {
-                        _PCBList[incrementer].state = "Ready";
-                    }
-                }
-                _ReadyQueue.clearQueue();
-                for (let i = 0; i < _PCBList.length; i++) {
-                    if (_PCBList[i].state === "Ready") {
-                        _ReadyQueue.enqueue(_PCBList[i]);
-                    }
-                }
-                if (!_CPU.isExecuting) {
-                    _PCB = _ReadyQueue.dequeue();
-                    _ReadyQueue.enqueue(_PCB);
-                    _CPU.isExecuting = true;
-                }
-                _MemoryAccessor.updateTables();
+            if (!_CPU.isExecuting) {
+                _PCB = _ReadyQueue.dequeue();
+                _ReadyQueue.enqueue(_PCB);
+                _CPU.isExecuting = true;
             }
+            _MemoryAccessor.updateTables();
         }
         shellPs() {
             if (_PCBList.length > 0) {

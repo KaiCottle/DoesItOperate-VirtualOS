@@ -3,13 +3,15 @@ module TSOS {
         
         constructor() {}
 
-        public contextSwitch() {
-            let currentProcess = _ReadyQueue.dequeue();
+        public contextSwitch(currentProcess: Pcb) {
+
+                if (_PCB.state != "Terminated") {
+                _ReadyQueue.enqueue(_PCB);
+                _PCB.state = "Ready";
+            }
             _CPU.switch(currentProcess);
 
-            if (currentProcess.state != "Terminated") {
-                _ReadyQueue.enqueue(currentProcess);
-            }
         }
+        
     }
 }

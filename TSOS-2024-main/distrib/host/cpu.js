@@ -56,12 +56,10 @@ var TSOS;
             }
         }
         fetch() {
-            if (!_PCB || _PCB.state === "Terminated") {
-                _Dispatcher.contextSwitch();
-                return;
+            if (_PCB.state != "Terminated") {
+                this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
+                this.decode();
             }
-            this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
-            this.decode();
             _MemoryAccessor.updateTables();
         }
         decode() {

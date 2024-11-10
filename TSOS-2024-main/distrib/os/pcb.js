@@ -1,6 +1,6 @@
 var TSOS;
 (function (TSOS) {
-    //I used chat gpt for all these comments and to make my init function.
+    //I used chat gpt for all these comments
     class Pcb {
         PID;
         PC;

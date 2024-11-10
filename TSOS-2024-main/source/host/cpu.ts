@@ -53,14 +53,11 @@ module TSOS {
             }
         }
 
-        public fetch(): void {
-            if (!_PCB || _PCB.state === "Terminated") {
-                _Dispatcher.contextSwitch();
-                return;
-            }
-
+        public fetch() {
+             if (_PCB.state!="Terminated") {
             this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
             this.decode();
+            }
             _MemoryAccessor.updateTables();
         }
 

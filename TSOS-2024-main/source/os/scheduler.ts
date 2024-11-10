@@ -2,32 +2,33 @@ module TSOS {
     export class Scheduler {
         public quantumCheck: number = 0;
 
+        constructor() {
+        }
+
         public scheduling(): void {
             let terminatedCount = 0;
 
-            // Check terminated processes and clear the queue if all are terminated
-            for (let i = 0; i < _PCBList.length; i++) {
-                if (_PCBList[i].state === "Terminated") {
+            for (const pcb of _PCBList) {
+                if (pcb.state === "Terminated") {
                     terminatedCount++;
                 }
             }
 
+            // Clear the queue if all processes are terminated
             if (terminatedCount === _PCBList.length) {
                 _ReadyQueue.clearQueue();
             }
 
-            // Schedule processes if there are any in the ready queue
+            // Schedule process if there are processes in the ready queue
             if (_ReadyQueue.getSize() > 0) {
-                _Kernel.krnTrace("Scheduling " + _ReadyQueue.getSize() + " with RR");
+                _Kernel.krnTrace(`Scheduling ${_ReadyQueue.getSize()} processes with Round Robin`);
 
                 if (this.quantumCheck < _PRQuantum) {
                     this.quantumCheck++;
                 } else {
-                    _Dispatcher.contextSwitch();
+                    _KernelInterruptQueue.enqueue(new Interrupt(CONTEXT_SWITCH_IRQ, [_ReadyQueue.dequeue()]));
                     this.quantumCheck = 0;
                 }
-            } else {
-                _CPU.isExecuting = false;
             }
         }
     }

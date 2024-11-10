@@ -2,12 +2,12 @@ var TSOS;
 (function (TSOS) {
     class Dispatcher {
         constructor() { }
-        contextSwitch() {
-            let currentProcess = _ReadyQueue.dequeue();
-            _CPU.switch(currentProcess);
-            if (currentProcess.state != "Terminated") {
-                _ReadyQueue.enqueue(currentProcess);
+        contextSwitch(currentProcess) {
+            if (_PCB.state != "Terminated") {
+                _ReadyQueue.enqueue(_PCB);
+                _PCB.state = "Ready";
             }
+            _CPU.switch(currentProcess);
         }
     }
     TSOS.Dispatcher = Dispatcher;
