@@ -4,28 +4,41 @@ var TSOS;
         H0B;
         LOB;
         memory;
-        constructor() {
-        }
+        constructor() { }
         init() { }
-        // Read a value from the specified memory address
         read(address) {
-            return _Memory.totalMemory[address + _PCB.base];
+            const add = address + _PCB.base;
+            if (this.isAddressValid(add)) {
+                return _Memory.totalMemory[add];
+            }
+            else {
+                this.handleMemoryViolation(add, _PCB.PID, "read");
+                return null;
+            }
         }
-        // Write data to the specified memory address
         write(address, data) {
             const add = address + _PCB.base;
             const { base, limit, state, PID } = _PCB;
             if (["Resident", "Ready", "Running"].includes(state)) {
-                if (add >= base && add <= limit) {
+                if (this.isAddressValid(add)) {
                     _Memory.totalMemory[add] = data;
                     TSOS.Control.updateMemoryDisplay(add);
                 }
                 else {
-                    _CPU.isExecuting = false;
-                    _StdOut.putText(`OUT OF BOUNDS ERROR ON PID: ${PID}`);
-                    _OsShell.shellKill();
+                    this.handleMemoryViolation(add, PID, "write");
                 }
             }
+        }
+        // Within valid bounds
+        isAddressValid(address) {
+            return address >= _PCB.base && address <= _PCB.limit;
+        }
+        // Handle out-of-bounds
+        handleMemoryViolation(address, pid, operation) {
+            _CPU.isExecuting = false;
+            _StdOut.putText(`Memory Access Violation: Attempted to ${operation} at address ${address}, which is out of bounds for PID ${pid}.`);
+            _StdOut.advanceLine();
+            _OsShell.shellKill();
         }
         clearAll() {
             for (let i = 0; i < _Memory.totalMemory.length; i++) {
@@ -44,6 +57,10 @@ var TSOS;
         updateTables() {
             TSOS.Control.processTableUpdate();
             TSOS.Control.cpuTableUpdate();
+        }
+        // Bounds checking
+        getMemorySize() {
+            return _Memory.totalMemory.length;
         }
     }
     TSOS.MemoryAccessor = MemoryAccessor;

@@ -57,7 +57,14 @@ var TSOS;
         }
         fetch() {
             if (_PCB.state != "Terminated") {
-                this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
+                const currentAddress = this.PC;
+                const fetchedCode = _MemoryAccessor.read(this.PC);
+                if (fetchedCode === null) {
+                    this.logError("Fetch Error: Invalid memory address or missing operand.");
+                    this.terminateProcess();
+                    return;
+                }
+                this.Ir = fetchedCode.toString(16).toUpperCase();
                 this.decode();
             }
             _MemoryAccessor.updateTables();
@@ -67,49 +74,63 @@ var TSOS;
             switch (this.Ir) {
                 case "A9":
                     this.ldaA9();
-                    break;
+                    break; // Load Accumulator with Constant
                 case "AD":
-                    this.ldaAd();
-                    break;
+                    this.checkOperandAvailability(this.ldaAd);
+                    break; // Load Accumulator from Memory
                 case "8D":
-                    this.sta8d();
-                    break;
+                    this.checkOperandAvailability(this.sta8d);
+                    break; // Store Accumulator in Memory
                 case "6D":
-                    this.adc6d();
-                    break;
+                    this.checkOperandAvailability(this.adc6d);
+                    break; // Add with Carry
                 case "A2":
                     this.ldxA2();
-                    break;
+                    break; // Load X Register with Constant
                 case "AE":
-                    this.ldxAe();
-                    break;
+                    this.checkOperandAvailability(this.ldxAe);
+                    break; // Load X Register from Memory
                 case "A0":
                     this.ldyA0();
-                    break;
+                    break; // Load Y Register with Constant
                 case "AC":
-                    this.ldyAc();
-                    break;
+                    this.checkOperandAvailability(this.ldyAc);
+                    break; // Load Y Register from Memory
                 case "EA":
                     this.nopEa();
-                    break;
+                    break; // No Operation
                 case "0":
                     this.brk00();
-                    break;
+                    break; // Break (System Call)
                 case "EC":
-                    this.cpxEc();
-                    break;
+                    this.checkOperandAvailability(this.cpxEc);
+                    break; // Compare X Register
                 case "D0":
-                    this.bneD0();
-                    break;
+                    this.checkOperandAvailability(this.bneD0);
+                    break; // Branch if Not Equal
                 case "EE":
-                    this.incEe();
-                    break;
+                    this.checkOperandAvailability(this.incEe);
+                    break; // Increment Value in Memory
                 case "FF":
                     this.sysFf();
-                    break;
+                    break; // System Call
                 default:
+                    this.logError(`Invalid Opcode: ${this.Ir} at address ${this.PC}`);
                     this.terminateProcess();
                     break;
+            }
+        }
+        logError(message) {
+            _StdOut.putText(`Error: ${message}`);
+            _StdOut.advanceLine();
+        }
+        checkOperandAvailability(operation) {
+            if (this.PC + 1 >= _MemoryAccessor.getMemorySize()) {
+                this.logError("Missing Operand: Required operand is outside memory bounds.");
+                this.terminateProcess();
+            }
+            else {
+                operation.call(this);
             }
         }
         terminateProcess() {
@@ -118,6 +139,8 @@ var TSOS;
             _PCB.state = "Terminated";
             _Segments[_PCB.segment].ACTIVE = false;
             _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
+            _StdOut.putText(`Process terminated due to an error.`);
+            _StdOut.advanceLine();
         }
         ldaA9() { this.PC++; this.Acc = _MemoryAccessor.read(this.PC); this.PC++; }
         ldaAd() { this.PC++; this.Acc = _MemoryAccessor.read(this.littleEndian()); this.PC += 2; }

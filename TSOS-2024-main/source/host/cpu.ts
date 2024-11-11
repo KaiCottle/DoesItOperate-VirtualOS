@@ -54,9 +54,18 @@ module TSOS {
         }
 
         public fetch() {
-             if (_PCB.state!="Terminated") {
-            this.Ir = _MemoryAccessor.read(this.PC).toString(16).toUpperCase();
-            this.decode();
+            if (_PCB.state != "Terminated") {
+                const currentAddress = this.PC;
+                const fetchedCode = _MemoryAccessor.read(this.PC);
+
+                if (fetchedCode === null) {
+                    this.logError("Fetch Error: Invalid memory address or missing operand.");
+                    this.terminateProcess();
+                    return;
+                }
+
+                this.Ir = fetchedCode.toString(16).toUpperCase();
+                this.decode();
             }
             _MemoryAccessor.updateTables();
         }
@@ -64,23 +73,39 @@ module TSOS {
         public decode(): void {
             _PCB.state = "Running";
             switch (this.Ir) {
-                case "A9": this.ldaA9(); break;
-                case "AD": this.ldaAd(); break;
-                case "8D": this.sta8d(); break;
-                case "6D": this.adc6d(); break;
-                case "A2": this.ldxA2(); break;
-                case "AE": this.ldxAe(); break;
-                case "A0": this.ldyA0(); break;
-                case "AC": this.ldyAc(); break;
-                case "EA": this.nopEa(); break;
-                case "0": this.brk00(); break;
-                case "EC": this.cpxEc(); break;
-                case "D0": this.bneD0(); break;
-                case "EE": this.incEe(); break;
-                case "FF": this.sysFf(); break;
+                case "A9": this.ldaA9(); break; // Load Accumulator with Constant
+                case "AD": this.checkOperandAvailability(this.ldaAd); break; // Load Accumulator from Memory
+                case "8D": this.checkOperandAvailability(this.sta8d); break; // Store Accumulator in Memory
+                case "6D": this.checkOperandAvailability(this.adc6d); break; // Add with Carry
+                case "A2": this.ldxA2(); break; // Load X Register with Constant
+                case "AE": this.checkOperandAvailability(this.ldxAe); break; // Load X Register from Memory
+                case "A0": this.ldyA0(); break; // Load Y Register with Constant
+                case "AC": this.checkOperandAvailability(this.ldyAc); break; // Load Y Register from Memory
+                case "EA": this.nopEa(); break; // No Operation
+                case "0": this.brk00(); break; // Break (System Call)
+                case "EC": this.checkOperandAvailability(this.cpxEc); break; // Compare X Register
+                case "D0": this.checkOperandAvailability(this.bneD0); break; // Branch if Not Equal
+                case "EE": this.checkOperandAvailability(this.incEe); break; // Increment Value in Memory
+                case "FF": this.sysFf(); break; // System Call
                 default:
+                    this.logError(`Invalid Opcode: ${this.Ir} at address ${this.PC}`);
                     this.terminateProcess();
                     break;
+            }
+        }
+        
+
+        private logError(message: string): void {
+            _StdOut.putText(`Error: ${message}`);
+            _StdOut.advanceLine();
+        }
+
+        private checkOperandAvailability(operation: Function): void {
+            if (this.PC + 1 >= _MemoryAccessor.getMemorySize()) {
+                this.logError("Missing Operand: Required operand is outside memory bounds.");
+                this.terminateProcess();
+            } else {
+                operation.call(this);
             }
         }
 
@@ -90,7 +115,10 @@ module TSOS {
             _PCB.state = "Terminated";
             _Segments[_PCB.segment].ACTIVE = false;
             _MemoryManager.clearSegment(_PCB.base, _PCB.limit);
+            _StdOut.putText(`Process terminated due to an error.`);
+            _StdOut.advanceLine();
         }
+
 
         public ldaA9() { this.PC++; this.Acc = _MemoryAccessor.read(this.PC); this.PC++; }
         public ldaAd() { this.PC++; this.Acc = _MemoryAccessor.read(this.littleEndian()); this.PC += 2; }
