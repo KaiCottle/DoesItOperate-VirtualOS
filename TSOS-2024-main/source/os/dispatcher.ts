@@ -12,6 +12,5 @@ module TSOS {
             _CPU.switch(currentProcess);
 
         }
-        
     }
 }
