@@ -40,7 +40,9 @@ var _Cycle: number = 0;
 var _Scheduler: TSOS.Scheduler;
 var _Dispatcher: TSOS.Dispatcher;
 const CONTEXT_SWITCH_IRQ = 2;
-var _PRQuantum = 6; 
+var _PRQuantum = 6;
+var _Disk: TSOS.Disk;
+var _DSDD: TSOS.Dsdd;
 
 var _OSclock: number = 0;  // Page 23.
 

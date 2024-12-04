@@ -106,6 +106,46 @@ module TSOS {
                 "quantum",
                 "<int> - Enter an integer to set Round Robin quantum (measured in cpu cycles).");
             this.commandList[this.commandList.length] = sc;
+            
+            sc = new ShellCommand(this.shellFormat,
+                "format",
+                "<format> - Initialize all blocks in all sectors in all tracks.");
+            this.commandList[this.commandList.length] = sc;
+            sc = new ShellCommand(this.shellCreate,
+                "create",
+                "<filename> - Create the file 'filename'.");
+            this.commandList[this.commandList.length] = sc;
+
+            sc = new ShellCommand(this.shellRead,
+                "read",
+                "<filename> - Read and display the contents of 'filename'.");
+            this.commandList[this.commandList.length] = sc;
+
+            sc = new ShellCommand(this.shellWrite,
+                "write",
+                "<filename> 'data' - Write the data inside the quotes (but not the quoter themselves) to 'filename'.");
+            this.commandList[this.commandList.length] = sc;
+
+            sc = new ShellCommand(this.shellDelete,
+                "delete",
+                "<filename> - Remove 'filename' from storage.");
+            this.commandList[this.commandList.length] = sc;
+
+            sc = new ShellCommand(this.shellCopy,
+                "copy",
+                "<existing filename> <new filename> — copy.");
+            this.commandList[this.commandList.length] = sc;
+
+            sc = new ShellCommand(this.shellRename,
+                "rename",
+                "<current filename> <new filename>— rename.");
+            this.commandList[this.commandList.length] = sc;
+
+            sc = new ShellCommand(this.shellLs,
+                "ls",
+                "<ls> - list the files currently stored on the disk.");
+            this.commandList[this.commandList.length] = sc;
+
             // shutdown
             sc = new ShellCommand(this.shellShutdown,
                                   "shutdown",
@@ -193,7 +233,6 @@ module TSOS {
             }
         }
 
-        // Note: args is an optional parameter, ergo the ? which allows TypeScript to understand that.
         public execute(fn, args?) {
             // We just got a command, so advance the line...
             _StdOut.advanceLine();
@@ -235,8 +274,6 @@ module TSOS {
             }
             return retVal;
         }
-
-        // Shell Command Functions
         
         public shellInvalidCommand() {
             _StdOut.putText("Invalid Command. ");
@@ -326,34 +363,54 @@ module TSOS {
             _MemoryManager = new MemoryManager();
             const availableSegment = _MemoryManager.segmentAvailable();
         
+            // Check for memory availability
             if (availableSegment === -1) {
-                _StdOut.putText("No available memory.");
+                if (_DSDD.isFormatted) {
+                    // Handle loading to disk if memory is full
+                    _PCB.PID = _PID++;
+                    _PCB.priority = 5;
+                    _PCB.location = "Disk";
+                    _PCB.state = "Resident";
+                    _PCB.machineCode = userInputArray;
+                    _PCBList.push(_PCB);
+        
+                    // Generate file name and prepare machine code for disk
+                    const fileName = `~${_PCB.PID}`;
+                    while (_PCB.machineCode.length < 256) {
+                        _PCB.machineCode.push("00");
+                    }
+        
+                    // Create and write to disk
+                    _DSDD.fileCreate(fileName);
+                    _DSDD.fileWrite(fileName, _PCB.machineCode);
+        
+                    _StdOut.putText(`PID: ${_PCB.PID.toString()} loaded onto disk.`);
+                    _StdOut.advanceLine();
+                } else {
+                    _StdOut.putText("No available memory and disk is not formatted.");
+                    _StdOut.advanceLine();
+                }
+            } else {
+                // Load into main memory if available
+                _PCB.PID = _PID++;
+                _PCB.priority = 5;
+                _PCB.location = "Memory";
+                _PCB.state = "Resident";
+                _PCB.segment = availableSegment;
+                _PCB.machineCode = userInputArray;
+                _PCB.setBaseLimit();
+                _PCBList.push(_PCB);
+        
+                // Allocate memory for the process
+                _MemoryManager.allocateSegment(userInputArray);
+        
+                _StdOut.putText(`PID: ${_PCB.PID.toString()} loaded into main memory.`);
                 _StdOut.advanceLine();
-                return;
             }
-        
-            // Set up the PCB
-            _PCB.PID = _PID++;
-            _PCB.priority = 5;
-            _PCB.location = "Memory";
-            _PCB.state = "Resident";
-            _PCB.segment = availableSegment;
-            _PCB.machineCode = userInputArray;
-            _PCB.setBaseLimit();
-        
-            // Add the PCB to the PCB list
-            _PCBList.push(_PCB);
-        
-            // Allocate memory for the process
-            _MemoryManager.allocateSegment(userInputArray);
         
             // Update process table
             Control.processTableUpdate();
-        
-            // Display success message
-            _StdOut.putText(`PID: ${_PCB.PID.toString()} loaded successfully.`);
-            _StdOut.advanceLine();
-        }
+        }        
         
         public shellRun(args: string[]) {
             var pidCheck = Number(args[0]);
@@ -479,6 +536,142 @@ module TSOS {
                 _StdOut.putText("< 0");
             }
         }
+
+        public shellFormat(): void {
+            if (_CPU.isExecuting) {
+                _StdOut.putText("Unable to format disk while CPU is executing.");
+            } else {
+                _DSDD.fileFormat();
+                _StdOut.putText("Disk Formatted.");
+            }
+        }
+
+        public shellCreate(args: string[]): void {
+            if (args && args[0]) {
+                if (_DSDD.isFormatted) {
+                    if (args[0].length < 60) {
+                        if (_DSDD.fileCreate(args[0])) {
+                            _StdOut.putText("File " + args[0] + " created.");
+                        } else {
+                            _StdOut.putText("File " + args[0] + " already exists.");
+                        }
+                    } else {
+                        _StdOut.putText("File name too large.");
+                    }
+                } else {
+                    _StdOut.putText("Must format disk before creating files.");
+                }
+            } else {
+                _StdOut.putText("Enter filename.");
+            }
+        }
+
+        public shellRead(args: string[]): void {
+            if (_DSDD.isFormatted) {
+                if (!_DSDD.fileRead(args[0])) {
+                    _StdOut.putText("File does not exist.");
+                }
+            } else {
+                _StdOut.putText("Must format disk before reading.");
+            }
+        }
+
+        public shellWrite(args: string[]): void {
+            if (_DSDD.isFormatted) {
+                if (args.length > 1) {
+                    const firstQuote = args[1].charAt(0) === "\"";
+                    const lastQuote = args[args.length - 1].charAt(args[args.length - 1].length - 1) === "\"";
+        
+                    if (firstQuote && lastQuote) {
+                        if (args.length === 2) {
+                            args[1] = args[1].slice(1, -1);
+                        } else {
+                            args[1] = args[1].slice(1);
+                            args[args.length - 1] = args[args.length - 1].slice(0, -1);
+                        }
+        
+                        const incomingName = args[0];
+                        const incomingData = args.slice(1).join(" ");
+        
+                        if (_DSDD.fileWrite(incomingName, incomingData.split(""))) {
+                            _StdOut.putText('File ' + incomingName + ' written to.');
+                        } else {
+                            _StdOut.putText('File: ' + incomingName + ' , does not exist.');
+                        }
+                    } else {
+                        _StdOut.putText('Please enter filename "data" in quotes.');
+                    }
+                } else {
+                    _StdOut.putText('Please enter filename data after file name.');
+                }
+            } else {
+                _StdOut.putText("Please format disk.");
+            }
+        }
+
+        public shellDelete(args: string[]): void {
+            if (_DSDD.isFormatted) {
+                if (args[0].length < 60) {
+                    if (_DSDD.fileDelete(args[0])) {
+                        _StdOut.putText("File " + args[0] + " deleted.");
+                    } else {
+                        _StdOut.putText("File " + args[0] + " does not exist.");
+                    }
+                } else {
+                    _StdOut.putText("File name too long.");
+                }
+            } else {
+                _StdOut.putText("Please format disk.");
+            }
+        }
+
+        public shellCopy(args: string[]): void {
+            if (_DSDD.isFormatted) {
+                if (args.length === 2) {
+                    if (_DSDD.doesFileExist(args[0])) {
+                        if (_DSDD.fileCopy(args[0], args[1])) {
+                            _StdOut.putText('Successfully copied "' + args[0] + '" to "' + args[1] + '".');
+                        } else {
+                            _StdOut.putText("Copy failed.");
+                        }
+                    } else {
+                        _StdOut.putText("File does not exist.");
+                    }
+                } else {
+                    _StdOut.putText("Please enter file to copy and file to copy to");
+                }
+            } else {
+                _StdOut.putText("Please format disk.");
+            }
+        }
+
+        public shellRename(args: string[]): void {
+            if (_DSDD.isFormatted) {
+                if (_DSDD.doesFileExist(args[0])) {
+                    if (_DSDD.fileRename(args[0], args[1])) {
+                        _StdOut.putText("File successfully renamed.");
+                    } else {
+                        _StdOut.putText("File rename failed, please rename to a non-existing name.");
+                    }
+                } else {
+                    _StdOut.putText("File does not exist.");
+                }
+            } else {
+                _StdOut.putText("Please format disk.");
+            }
+        }
+
+        public shellLs(args: string[]): void {
+            if (_DSDD.isFormatted) {
+                const files = _DSDD.fileLs();
+                files.forEach((file) => {
+                    _StdOut.putText(file);
+                    _StdOut.advanceLine();
+                });
+            } else {
+                _StdOut.putText("Please format disk.");
+            }
+        }
         
         public shellKill() {
             var curPid = _PCB.PID;
@@ -576,6 +769,30 @@ module TSOS {
                         break;
                     case "quantum":
                         _StdOut.putText("<int> - Enter an integer to set Round Robin quantum (measured in cpu cycles).")
+                        break;
+                    case "format":
+                        _StdOut.putText("<format> - Initialize all blocks in all sectors in all tracks.")
+                        break;
+                    case "create":
+                        _StdOut.putText("<filename> - Create the file 'filename'.")
+                        break;
+                    case "read":
+                        _StdOut.putText("<filename> - Read and display the contents of 'filename'.")
+                        break;
+                    case "write":
+                        _StdOut.putText("<filename> 'data' - Write the data inside the quotes (but not the quoter themselves) to 'filename'.")
+                        break;
+                    case "delete":
+                        _StdOut.putText("<filename> - Remove 'filename' from storage.")
+                        break;
+                    case "copy":
+                        _StdOut.putText("<existing filename> <new filename> — copy.")
+                        break;
+                    case "rename":
+                        _StdOut.putText("<current filename> <new filename>— rename.")
+                        break;
+                    case "ls":
+                        _StdOut.putText("<ls> - list the Eiles currently stored on the disk.")
                         break;
                     case "help":
                         _StdOut.putText("Displays a list of available commands.");
