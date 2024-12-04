@@ -129,6 +129,49 @@ var TSOS;
             });
             cpuTable.appendChild(row);
         }
+        static tsbTableUpdate() {
+            const tsbTable = document.getElementById("tsbTable");
+            if (!tsbTable)
+                return;
+            // Clear existing content
+            this.removeChildren(tsbTable);
+            // Add table headers
+            const headerRow = `
+                <tr>
+                    <th>Address (T:S:B)</th>
+                    <th>Used</th>
+                    <th>Pointer</th>
+                    <th>Data</th>
+                </tr>`;
+            tsbTable.innerHTML = headerRow;
+            let newRow = "";
+            // Populate table rows
+            for (let t = 0; t < _Disk.track; t++) {
+                for (let s = 0; s < _Disk.sector; s++) {
+                    for (let b = 0; b < _Disk.block; b++) {
+                        const rawInfo = sessionStorage.getItem(`${t}:${s}:${b}`);
+                        if (!rawInfo)
+                            continue;
+                        const info = rawInfo.split(" ");
+                        const data = info.slice(4).join(" ").trim();
+                        // Create row for each block
+                        newRow += `
+                            <tr>
+                                <td>${t}:${s}:${b}</td>
+                                <td>${info[0]}</td>
+                                <td>${info[1]}:${info[2]}:${info[3]}</td>
+                                <td>${data || "Empty"}</td>
+                            </tr>`;
+                    }
+                }
+            }
+            tsbTable.innerHTML += newRow;
+        }
+        static removeChildren(element) {
+            while (element.firstChild) {
+                element.removeChild(element.firstChild);
+            }
+        }
         static hostBtnReset_click() {
             location.reload();
         }

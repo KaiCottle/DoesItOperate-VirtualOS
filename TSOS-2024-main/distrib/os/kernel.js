@@ -11,16 +11,16 @@ var TSOS;
     class Kernel {
         // OS Startup and Shutdown Routines
         krnBootstrap() {
-            TSOS.Control.hostLog("bootstrap", "host"); // Log OS bootstrap
-            // Initialize global queues and buffers
+            TSOS.Control.hostLog("bootstrap", "host");
             _KernelInterruptQueue = new TSOS.Queue();
             _KernelBuffers = new Array();
             _KernelInputQueue = new TSOS.Queue();
-            // Initialize console
             _Console = new TSOS.Console();
             _Console.init();
             _ReadyQueue = new TSOS.Queue();
-            // Initialize memory segments
+            _Disk = new TSOS.Disk();
+            _DSDD = new TSOS.Dsdd();
+            _MemoryManager = new TSOS.MemoryManager();
             _Segments = new Array();
             for (let i = 0; i < 3; i++) {
                 let segment = new TSOS.Segment();
@@ -28,37 +28,28 @@ var TSOS;
                 segment.ACTIVE = false;
                 _Segments[i] = segment;
             }
-            // Set standard input and output
             _StdIn = _Console;
             _StdOut = _Console;
-            // Initialize memory manager
-            _MemoryManager = new TSOS.MemoryManager();
-            // Load the keyboard device driver
             this.krnTrace("Loading the keyboard device driver.");
             _krnKeyboardDriver = new TSOS.DeviceDriverKeyboard();
             _krnKeyboardDriver.driverEntry();
             this.krnTrace(_krnKeyboardDriver.status);
-            // Enable OS interrupts
             this.krnTrace("Enabling the interrupts.");
             this.krnEnableInterrupts();
-            // Launch the shell
             this.krnTrace("Creating and Launching the shell.");
             _OsShell = new TSOS.Shell();
             _OsShell.init();
-            // Initiate student testing protocol if available
             if (_GLaDOS) {
                 _GLaDOS.afterStartup();
             }
         }
         krnShutdown() {
             this.krnTrace("begin shutdown OS");
-            // Disable interrupts
             this.krnTrace("Disabling the interrupts.");
             this.krnDisableInterrupts();
             this.krnTrace("end shutdown OS");
         }
         krnOnCPUClockPulse() {
-            // Check for interrupts and process them if present
             if (_KernelInterruptQueue.getSize() > 0) {
                 const interrupt = _KernelInterruptQueue.dequeue();
                 this.krnInterruptHandler(interrupt.irq, interrupt.params);
@@ -70,7 +61,6 @@ var TSOS;
                 this.krnTrace("Idle");
             }
         }
-        // Interrupt Handling
         krnEnableInterrupts() {
             TSOS.Devices.hostEnableKeyboardInterrupt();
         }
@@ -95,9 +85,7 @@ var TSOS;
             }
         }
         krnTimerISR() {
-            // Placeholder for timer ISR logic, if needed
         }
-        // OS Utility Routines
         krnTrace(msg) {
             if (_Trace) {
                 if (msg === "Idle" && _OSclock % 10 === 0) {
