@@ -34,11 +34,13 @@
    <script type="text/javascript" src="distrib/os/segment.js"></script>
    <script type="text/javascript" src="distrib/os/scheduler.js"></script>
    <script type="text/javascript" src="distrib/os/dispatcher.js"></script>
+   <script type="text/javascript" src="distrib/os/dsdd.js"></script>
+   <script type="text/javascript" src="distrib/host/disk.js"></script>
 
    <!-- Other Routines -->
    <script type="text/javascript" src="distrib/utils.js"></script>
    <!-- Uncomment the line below to enable GLaDOS testing.-->
-   <script type="text/javascript" src="http://alanclasses.github.io/TSOS/test/glados-ip3.js"></script>
+   <script type="text/javascript" src="http://alanclasses.github.io/TSOS/test/glados-ip4.js"></script>
 
 </head>
 
@@ -182,10 +184,24 @@ A9 03 8D 41 00 A9 01 8D 40 00 AC 40 00 A2 01 FF EE 40 00 AE 40 00 EC 41 00 D0 EF
          </table>
       </label>
       </div>
-</div>
+   </div>
 
-
-   
+   <div id="disk">
+      <label>
+        <table style="width: 100%; font-family: Tahoma, sans-serif;" id="diskTable">
+          <caption style="font-size: 16px; margin-bottom: 10px;">DISK</caption>
+          <thead>
+            <tr>
+              <th>T:S:B</th>
+              <th>I/O</th>
+              <th>Next...</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody id="tsbTable"></tbody>
+        </table>
+      </label>
+    </div>
 
    <div class="task-bar">
       <div class="windows-logo">
