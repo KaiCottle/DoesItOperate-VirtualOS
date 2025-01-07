@@ -22,4 +22,4 @@ This project offers a unique blend of educational value and practical functional
 Feel free to explore, interact, and enjoy the features of this operating system!
 
 ---
-Contributions are welcome! Join us in enhancing **KaiCottle-DoesItOperate** and making it even better.
+Contributions are welcome!
