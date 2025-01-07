@@ -1,7 +1,7 @@
 # KaiCottle-DoesItOperate
 
 ## Overview
-Welcome to **KaiCottle-DoesItOperate**, a browser-based operating system primarily written in TypeScript. This project started as an assignment for Alan's Operating Systems class and has grown with contributions from various collaborators. Learn more about the course [here](#). 
+Welcome to **KaiCottle-DoesItOperate**, a browser-based operating system primarily written in TypeScript. This project started as an assignment for my Operating Systems class and has grown with contributions from various collaborators. Learn more about the course [here](#). 
 
 This project offers a unique blend of educational value and practical functionality, providing users with an interactive OS experience directly in their browser.
 
