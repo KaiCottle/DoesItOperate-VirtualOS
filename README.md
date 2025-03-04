@@ -20,6 +20,3 @@ This project offers a unique blend of educational value and practical functional
 
 ## Get Started
 Feel free to explore, interact, and enjoy the features of this operating system!
-
----
-Contributions are welcome!
